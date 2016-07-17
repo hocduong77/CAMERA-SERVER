@@ -1,94 +1,67 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="sec"
-	uri="http://www.springframework.org/security/tags"%>
-<%@taglib uri="http://www.springframework.org/tags" prefix="spring"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
-<fmt:setBundle basename="messages" />
-<%@ page session="true"%>
-<fmt:message key="message.password" var="noPass" />
-<fmt:message key="message.username" var="noUser" />
-<c:if test="${param.error != null}">
-	<c:choose>
-		<c:when
-			test="${SPRING_SECURITY_LAST_EXCEPTION.message == 'User is disabled'}">
-			<div class="alert alert-error">
-				<spring:message code="auth.message.disabled"></spring:message>
-			</div>
-		</c:when>
-		<c:when
-			test="${SPRING_SECURITY_LAST_EXCEPTION.message == 'User account has expired'}">
-			<div class="alert alert-error">
-				<spring:message code="auth.message.expired"></spring:message>
-			</div>
-		</c:when>
-		<c:otherwise>
-			<div class="alert alert-error">
-			<!-- <c:out value="${SPRING_SECURITY_LAST_EXCEPTION.message}"/> -->
-				<spring:message code="message.badCredentials"></spring:message>
-			</div>
-		</c:otherwise>
-	</c:choose>
-</c:if>
-<html>
-
-<head>
-<link href="<c:url value="/resources/bootstrap.css" />" rel="stylesheet">
-<title><spring:message code="label.pages.home.title"></spring:message></title>
-<script type="text/javascript">
-	function validate() {
-		if (document.f.j_username.value == ""
-				&& document.f.j_password.value == "") {
-			alert("${noUser} & ${noPass}");
-			document.f.j_username.focus();
-			return false;
-		}
-		if (document.f.j_username.value == "") {
-			alert("${noUser}");
-			document.f.j_username.focus();
-			return false;
-		}
-		if (document.f.j_password.value == "") {
-			alert("${noPass}");
-			document.f.j_password.focus();
-			return false;
-		}
-	}
-</script>
-</head>
+<%@ include file="header.jsp" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <body>
+
+<div class="container">
+
+	<!-- Static navbar -->
+	<nav class="navbar navbar-inverse navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<div class="menutext">MENU</div>
+				</button>
+				<a class="navbar-brand" href="https://ipcamlive.com/"><img src="<c:url value="/resources/login_files/index-logo.png"/>" alt="ipcamlive"></a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+									<ul class="nav navbar-nav navbar-right">
+	<li><a href="<c:url value="/login.html" />">Login</a></li>
+</ul>							</div><!--/.nav-collapse -->
+		</div><!--/.container-fluid -->
+	</nav>
+
 	<div class="container">
-		<div class="span12">
-			<h1>
-				<spring:message code="label.form.loginTitle"></spring:message>
-			</h1>
-			<a href="?lang=en"><spring:message code="label.form.loginEnglish"></spring:message></a>
-			| <a href="?lang=es_ES"><spring:message
-					code="label.form.loginSpanish"></spring:message></a>
-			<form name='f' action="j_spring_security_check" method='POST'
-				onsubmit="return validate();">
-				<table>
-					<tr>
-						<td><label><spring:message
-									code="label.form.loginEmail"></spring:message></label></td>
-						<td><input type='text' name='j_username' value=''></td>
-					</tr>
-					<tr>
-						<td><label><spring:message
-									code="label.form.loginPass"></spring:message></label></td>
-						<td><input type='password' name='j_password' /></td>
-					</tr>
-					<tr>
-						<td><input name="submit" type="submit"
-							value=<spring:message code="label.form.submit"></spring:message> /></td>
-					</tr>
-				</table>
 
-			</form>
-			<br> Current Locale : ${pageContext.response.locale} <br> <a
-				href="<c:url value="/user/registration" />"><spring:message
-					code="label.form.loginSignUp"></spring:message></a>
-		</div>
+		<div id="contentdiv" class="content">
+					
+
+
+<div class="login">
+<c:set var="error" scope="session" value="${param.error}"/>
+<c:if test="${error == true}">
+	<div class="alert alert-danger collapse" role="alert" style="display: block;">
+		<strong>Error! </strong>Invalid login name or password.
 	</div>
-</body>
+</c:if>
+	<div id="logindiv">
+		<form action="j_spring_security_check"  method="post" id="loginform" class="form-signin">
+			<h2 class="form-signin-heading">Please sign in</h2>
+			<input input type='text' name='j_username' value='' class="form-control" placeholder="Login name">
+			<input input type='password' name='j_password' class="form-control" placeholder="Password">
+			<label class="checkbox">
+				<input type="checkbox" id="rememberme" value="remember-me"> Remember me
+			</label>
+			<button id="okbutton" class="btn btn-large btn-default" data-loading-text="Loading..." type="submit">Login</button>
+			<div class="register pull-right">
+				<a href="<c:url value="/user/registration" />">Sign up</a><br>
+				<a href="https://ipcamlive.com/sendpasswordresetlink">Forgotten password</a>
+			</div>
+		</form>
 
-</html>
+	</div>
+
+</div>				
+</div>
+
+</div>
+
+</div>
+
+	<script src="<c:url value="/resources/login_files/bootstrap.min.js"/>"></script>
+
+
+</body></html>
