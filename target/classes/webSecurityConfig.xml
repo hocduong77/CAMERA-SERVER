@@ -19,6 +19,8 @@
 		<intercept-url pattern="/emailError*" access="permitAll" />
 		<intercept-url pattern="/resources/**" access="permitAll" />
 		<intercept-url pattern="/invalidSession*" access="isAnonymous()" />
+		<intercept-url pattern="/cameras*" access="isAuthenticated()" />
+		<intercept-url pattern="/addcamera*" access="isAuthenticated()" />
 	<intercept-url pattern="/*" access="permitAll" />
 		<form-login login-page='/login.html'
 			authentication-failure-url="/login.html?error=true"

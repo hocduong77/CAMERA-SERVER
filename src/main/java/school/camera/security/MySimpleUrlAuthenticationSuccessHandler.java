@@ -27,7 +27,7 @@ public class MySimpleUrlAuthenticationSuccessHandler implements AuthenticationSu
         handle(request, response, authentication);
         HttpSession session = request.getSession(false);
         if (session != null) {
-            session.setMaxInactiveInterval(30);
+            session.setMaxInactiveInterval(20*60);
         }
         clearAuthenticationAttributes(request);
     }

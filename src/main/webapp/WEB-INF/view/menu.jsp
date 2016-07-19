@@ -20,6 +20,7 @@
 	content="Video streaming solution for embedding your IP camera live video stream in web page.">
 <meta name="author" content="">
 
+<link href="<c:url value="/resources/DashBoard_files/bootstrap.css"/>" rel="stylesheet">
 <link href="<c:url value="/resources/DashBoard_files/bootstrap.min.css"/>" rel="stylesheet">
 <!--[if lt IE 9]>
 	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -74,7 +75,7 @@
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav">
 						<li class="active"><a href="https://ipcamlive.com/main">Dashboard</a></li>
-						<li><a href="https://ipcamlive.com/cameras">Cameras</a></li>
+						<li><a href="<c:url value="/cameras" />">Cameras</a></li>
 						<li><a href="https://ipcamlive.com/accountstatus">Account</a></li>
 						<li><a href="https://ipcamlive.com/finance">Finance</a></li>
 					</ul>
@@ -97,18 +98,4 @@
 			<!--/.container-fluid -->
 		</nav>
 
-		<div class="container">
-
-			<div id="contentdiv" class="content">
-
-
-				<div id="alert_placeholder"></div>
-
-
-				<div class="clearfix"></div>
-
-			</div>
-
-		</div>
-
-	</div>
+		

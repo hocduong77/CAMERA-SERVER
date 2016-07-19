@@ -53,7 +53,19 @@ public class RegistrationController {
     public String index() {
         return "index";
     }
-
+    
+    @RequestMapping(value = "/cameras", method = RequestMethod.GET)
+    public String showCamera(WebRequest request, Model model) {
+        LOGGER.debug("Rendering registration page.");
+        return "cameras";
+    }
+    
+    @RequestMapping(value = "/addcamera", method = RequestMethod.GET)
+    public String addCamera(WebRequest request, Model model) {
+        LOGGER.debug("Rendering registration page.");
+        return "addcamera";
+    }
+    
     @RequestMapping(value = "/user/registration", method = RequestMethod.GET)
     public String showRegistrationForm(WebRequest request, Model model) {
         LOGGER.debug("Rendering registration page.");

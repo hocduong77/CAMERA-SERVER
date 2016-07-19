@@ -1,8 +1,6 @@
 package school.camera.persistence.model;
 
 import javax.persistence.CascadeType;
-//ERASE
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
