@@ -69,27 +69,25 @@
 							class="icon-bar"></span>
 						<div class="menutext">MENU</div>
 					</button>
-					<a class="navbar-brand" href="https://ipcamlive.com/"><img
+					<a class="navbar-brand" href="<c:url value="/homepage"/>"><img
 						src="<c:url value="/resources/DashBoard_files/index-logo.png"/>" alt="ipcamlive"></a>
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav">
-						<li class="active"><a href="https://ipcamlive.com/main">Dashboard</a></li>
+						<li class="active"><a href="<c:url value="/homepage" />">Dashboard</a></li>
 						<li><a href="<c:url value="/cameras" />">Cameras</a></li>
-						<li><a href="https://ipcamlive.com/accountstatus">Account</a></li>
-						<li><a href="https://ipcamlive.com/finance">Finance</a></li>
+						<li><a href="<c:url value="/accountstatus" />">Account</a></li>
+						<li><a href="<c:url value="/finance" />">Finance</a></li>				
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
 						<li class="dropdown"><a
-							href="https://ipcamlive.com/userprofile" class="dropdown-toggle"
-							data-toggle="dropdown" role="button" aria-expanded="false">hoc
-								duong <span class="caret"></span>
+							href="<c:url value="/j_spring_security_logout" />" class="dropdown-toggle"
+							data-toggle="dropdown" role="button" aria-expanded="false">Logout <span class="caret"></span>
 						</a>
 							<ul class="dropdown-menu" role="menu">
-								<li><a href="https://ipcamlive.com/userprofile">Profile</a></li>
-								<li><a href="https://ipcamlive.com/changepassword">Change
-										password</a></li>
-								<li><a href="https://ipcamlive.com/logout">Logout</a></li>
+							<li><a href="<c:url value="/Profile" />">Profile</a></li>	
+							<li><a href="<c:url value="/changepassword" />">Changepassword</a></li>	
+							<li><a href="<c:url value="/j_spring_security_logout" />">Logout</a></li>								
 							</ul></li>
 					</ul>
 				</div>

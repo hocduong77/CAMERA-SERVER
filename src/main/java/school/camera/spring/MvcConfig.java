@@ -37,6 +37,7 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
     @Override
     public void addViewControllers(final ViewControllerRegistry registry) {
         super.addViewControllers(registry);
+        registry.addViewController("/homepage.html");
         registry.addViewController("/addcamera.html");
         registry.addViewController("/cameras.html");
         registry.addViewController("/login.html");

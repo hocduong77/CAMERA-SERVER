@@ -6,6 +6,7 @@
 		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.2.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
 	<http use-expressions="true">
+		<intercept-url pattern="/homepage*" access="permitAll" />
 		<intercept-url pattern="/index*" access="permitAll" />
 		<intercept-url pattern="/login*" access="permitAll" />
 		<intercept-url pattern="/logout*" access="permitAll" />
@@ -21,6 +22,8 @@
 		<intercept-url pattern="/invalidSession*" access="isAnonymous()" />
 		<intercept-url pattern="/cameras*" access="isAuthenticated()" />
 		<intercept-url pattern="/addcamera*" access="isAuthenticated()" />
+		<intercept-url pattern="/test*" access="isAuthenticated()" />
+		<intercept-url pattern="/saveCamera*" access="isAuthenticated()" />
 	<intercept-url pattern="/*" access="permitAll" />
 		<form-login login-page='/login.html'
 			authentication-failure-url="/login.html?error=true"
@@ -28,7 +31,7 @@
 			default-target-url="/homepage.html" />
 		<session-management invalid-session-url="/invalidSession.html"
 			session-fixation-protection="none" />
-		<logout invalidate-session="false" logout-success-url="/logout.html?logSucc=true"
+		<logout invalidate-session="false" logout-success-url="/login.html"
 			logout-url="/j_spring_security_logout" delete-cookies="JSESSIONID" />
 	</http>
 	<authentication-manager>

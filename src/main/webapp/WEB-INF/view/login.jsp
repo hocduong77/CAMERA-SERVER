@@ -15,7 +15,7 @@
 					<span class="icon-bar"></span>
 					<div class="menutext">MENU</div>
 				</button>
-				<a class="navbar-brand" href="https://ipcamlive.com/"><img src="<c:url value="/resources/login_files/index-logo.png"/>" alt="ipcamlive"></a>
+				<a class="navbar-brand" href="<c:url value="/" />"><img src="<c:url value="/resources/login_files/index-logo.png"/>" alt="ipcamliveee"></a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 									<ul class="nav navbar-nav navbar-right">
@@ -48,7 +48,7 @@
 			<button id="okbutton" class="btn btn-large btn-default" data-loading-text="Loading..." type="submit">Login</button>
 			<div class="register pull-right">
 				<a href="<c:url value="/user/registration" />">Sign up</a><br>
-				<a href="https://ipcamlive.com/sendpasswordresetlink">Forgotten password</a>
+				<a href="<c:url value="/user/forgotten" />">Forgotten password</a>
 			</div>
 		</form>
 

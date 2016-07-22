@@ -15,7 +15,28 @@ public class Camera {
 
 	private String cameraUrl;
 
+	private String alias;
+	
+	private String name;
+	
 	private boolean enabled;
+
+	
+	public String getAlias() {
+		return alias;
+	}
+
+	public void setAlias(String alias) {
+		this.alias = alias;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public Long getCameraid() {
 		return cameraid;

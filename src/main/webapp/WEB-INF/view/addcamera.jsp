@@ -29,13 +29,24 @@ $(document).ready(function() {
 	$('#formprocessdiv').hide();
 	$('#addprocessdiv').hide();
 	
-	$('#urledit').val(url);
+	//$('#urledit').val(url);
 
 	$('#cameraform').submit(function() {
-
-		console.log("submitbutton");
-		$('#videodiv').show();
- 	 	$('#playerdiv').html('<iframe width="700" height="500" src="https://www.youtube.com/embed/An2a1_Do_fc" frameborder="0" allowfullscreen></iframe>');
+		var cameraurl = $('#urledit').val();
+		console.log("url " + cameraurl);
+		$.ajax({
+			type: "post",
+			url : 'test' , 
+			data:'url=' + cameraurl ,
+			success : function(data) {
+				var str = data;
+				console.log("data" +data);
+				$('#videodiv').show();
+		 	 	$('#playerdiv').html(data);
+			}
+		});
+	
+		
 
 		return false;
 	});
@@ -43,8 +54,19 @@ $(document).ready(function() {
 	$('#addbutton').button().click(function() {
 		$('#addbutton').hide();
 		$('#addprocessdiv').show();
-
-		var data = {
+		var url = $('#urledit').val();
+		console.log("addbutton url " + url);
+		
+		$.ajax({								
+			url : 'saveCamera/' + url ,
+			success : function(data) {
+				var str = data;
+				console.log("data" +data);
+				$('#videodiv').show();
+		 	 	$('#playerdiv').html(data);
+			}
+		});
+/* 		var data = {
 			cameraid: cameraid,
 			state: 'A'
 		};
@@ -58,51 +80,12 @@ $(document).ready(function() {
 
 				bootstrap_alert.error('Cannot add new camera.');
 			}
-		}, 'json');
+		}, 'json'); */
 
 		return false;
 	});
 
  });
-
-
-
-
-function WaitForStreamBuffered() {
-	setTimeout( function() {
- 		log('WaitForStreamBuffered: check');
-		$.get('ajax/getcamerastreamstate.php', {cameraalias: alias}, function(data) {
-			if ((typeof data.streaminfo != 'undefined') && (data.streaminfo.live.segmentcount >= 3)) {
-	 				log('WaitForStreamBuffered: embed');
-	 				
-	 				var aspectratio = data.streaminfo.video.width / data.streaminfo.video.height;
-					var width = 700;
-					var height = width / aspectratio; 
-	 				
-	 	 			$('#playerdiv').html('<iframe src="player/player.php?alias={0}&autoplay=1&disablevideofit=1&token={1}" width="{2}px" height="{3}px"/>'.format(alias, token, width, height));
-
-	 	 			CheckStreamInfo();
-
-	 	 			// Close the stream after 4 min
-					setTimeout( function() {
-						document.location.href='streamtest';
-					}, 4 * 60 * 1000);
-	 		} else {
-	 			connecttime += 1000;
-
-	 			if (connecttime < 60000) {
-	 				WaitForStreamBuffered();
-	 			} else {
-	 				$('#videodiv').hide();
-	 				$('#submitbutton').show();
-	 				$('#formprocessdiv').hide();
-
-	 				bootstrap_alert.error('Video stream cannot be started. Read more <a href="faqs">here</a>.');
-	 			}
-			}
- 		}, 'json');
- 	}, 1000);
-}
 
 
 </script>
@@ -118,14 +101,11 @@ function WaitForStreamBuffered() {
 	<p>To add a new camera, just enter the URL of the RTSP/HTTP video stream. Example:</p>
 		<pre id="codediv">rtsp://user:pass@mydomain.com:554/h264
 http://user:pass@mydomain.com/mjpeg</pre>
-	<p><b>ONVIF Camera Discovery Tool:</b> If you do not know the proper URL of your stream <a href="https://ipcamlive.com/discovercameraprofiles">this tool</a> can help you to discover the capabilities of your camera using ONVIF protocol.</p>
-	<p><b>How-to video:</b> If you need assistance for adding your video stream, you can watch <a href="http://youtu.be/x_GFrOYfqqU" target="_blank">this video</a> which goes through the necessary streps.</p>
 
-	<p>You can find useful information about adding new video stream on our <a href="https://ipcamlive.com/faqs">FAQ</a> page.</p>
 
 	<br>
 
-	<form action="https://ipcamlive.com/streamtest#" method="post" id="cameraform" class="form-horizontal" novalidate="novalidate">
+	<form action="/" method="post" id="cameraform" class="form-horizontal" novalidate="novalidate">
 		<div id="urldiv" class="form-group">
 			<label id="urltextdiv" class="col-sm-2 control-label">URL of your camera:</label>
 			<div class="col-sm-4">
@@ -150,10 +130,16 @@ http://user:pass@mydomain.com/mjpeg</pre>
 			</td>
 			<td>
 				<br>
-
-				<button id="addbutton" class="btn btn-success pull-left">Add camera</button>
-				<div id="addprocessdiv" class="loading pull-left" style="display: none;"></div>
+				
+				<!-- <button id="addbutton" class="btn btn-success pull-left">Add camera</button> -->
+				
 			</td>
+		</tr>
+		<tr>
+				<form action="<c:url value="/saveCamera" />" method="get" id="cameraform" class="form-horizontal" novalidate="novalidate">
+				<input type="submit" value="Add camera"  class="btn btn-primary pull-left">
+				<div id="addprocessdiv" class="loading pull-left" style="display: none;"></div>
+				</form>
 		</tr>
 	</tbody></table>
 </div>				

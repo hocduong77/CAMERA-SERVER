@@ -7,7 +7,7 @@
 <!-- saved from url=(0022)https://ipcamlive.com/ -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	
-	<title>Embedding IP Camera Live Video Stream in web page - IPCamLive.com</title>
+	<title>Embedding IP Camera Live Video Stream in web page</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="keywords" content="ip camera, network camera, embed ip camera, embed ip camera into webpage, embed ip camera stream in web page, embed network camera on website">
 	<meta name="description" content="Video streaming solution for embedding your IP camera live video stream in web page.">
@@ -53,16 +53,7 @@
 	<script type="text/javascript" src="<c:url value="/resources/index_files/xutils.js"/>"></script>
 
 	
-	<script>
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-		ga('create', 'UA-46297675-2', 'ipcamlive.com');
-		ga('send', 'pageview');
-
-	</script>
 	
 
 </head>
