@@ -1,6 +1,8 @@
 package school.camera.web.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +22,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.model.Camera;
+import school.camera.persistence.service.CameraDto;
 
 @Controller
 public class CameraController {
@@ -34,9 +37,10 @@ public class CameraController {
 	}
 
 	@RequestMapping(value = "/cameras", method = RequestMethod.GET)
-	public String showCamera(WebRequest request, Model model) {
+	public ModelAndView showCamera(WebRequest request, Model model) {
 		LOGGER.info("Rendering camera page.");
-		return "cameras";
+		List<CameraDto> cameras = getListCameras();
+		return new ModelAndView("cameras","cameras", cameras);
 	}
 
 	@RequestMapping(value = "/addcamera", method = RequestMethod.GET)
@@ -52,12 +56,12 @@ public class CameraController {
 		LOGGER.info("Rendering test api.{}", url);
 		HttpSession session = request.getSession(false);
 		session.setAttribute("camera_test_url", url);
-		String cmd = "vlc.exe "+ url +" :network-caching=1000 :sout=#transcode{vcodec=theo,vb=1600,scale=1,acodec=none}:http{mux=ogg,dst=:8181/stream} :no-sout-rtp-sap :no-sout-standard-sap :sout-keep vlc://quit";
+		String cmd = "vlc.exe -I dummy "+ url +" :network-caching=1000 :sout=#transcode{vcodec=theo,vb=1600,scale=1,acodec=none}:http{mux=ogg,dst=:8181/stream} :no-sout-rtp-sap :no-sout-standard-sap :sout-keep vlc://quit";
 		LOGGER.info("cmd ==== {}", cmd);
 		Runtime runtime = Runtime.getRuntime();
 		runtime.exec(cmd);
 		try {
-			Thread.sleep(10000);
+			Thread.sleep(15000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -78,7 +82,15 @@ public class CameraController {
 		camera.setName(alias);
 		camera.setCameraUrl(cameraUrl);
 		cameraRepo.save(camera);
-		return new ModelAndView("cameras");
+		
+		List<CameraDto> cameras = getListCameras();
+		
+/*		CameraDto cameraDto = new CameraDto();
+		cameraDto.setAlias(alias);
+		cameraDto.setName(alias);
+		cameraDto.setCameraUrl(cameraUrl);*/
+		
+		return new ModelAndView("cameras","cameras", cameras);
 	}
 	
 	private String generateAlias() {
@@ -91,6 +103,20 @@ public class CameraController {
 		}
 		String result = sb.toString();
 		return result;		
+	}
+	
+	private List<CameraDto> getListCameras() {
+		List<Camera> cameras =  cameraRepo.findAll();
+		List<CameraDto> cameraDtos = new ArrayList<CameraDto>(); ;
+		
+		for (Camera camera : cameras) {
+			CameraDto cameraDto = new CameraDto();
+			cameraDto.setAlias(camera.getAlias());
+			cameraDto.setName(camera.getName());
+			cameraDto.setCameraUrl(camera.getCameraUrl());
+			cameraDtos.add(cameraDto);
+		}
+		return cameraDtos;
 	}
 
 }

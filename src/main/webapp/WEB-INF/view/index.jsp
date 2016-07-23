@@ -16,7 +16,7 @@
 					<div class="menutext">MENU</div>
 				</button>
 				<a class="navbar-brand" href="<c:url value="/"/>">
-				<img src="<c:url value="/resources/index_files/index-logo.png"/>" alt="ipcamlive">
+				<img src="<c:url value="/resources/index_files/index-logo.png"/>" alt="Camera Server">
 				</a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
@@ -107,7 +107,7 @@
 				<div class="popover">
 					<h4 class="popover-title"><i class="icon-ok icon-white"></i> Display video on any platform</h4>
 					<div class="popover-content">
-						<p>IPCamLive provides video player component compatible with most platforms (PC, MAC, mobile, tablet, ect.).</p>
+						<p>Camera Server provides video player component compatible with most platforms (PC, MAC, mobile, tablet, ect.).</p>
 					</div>
 				</div>
 			</div>
@@ -116,19 +116,11 @@
 				<div class="popover">
 					<h4 class="popover-title"><i class="icon-ok icon-white"></i> Easy integration to web page</h4>
 					<div class="popover-content">
-						<p>IPCamLive generates the necessary HTML snippet for embedding the video in the HTML page.</p>
+						<p>Camera Server generates the necessary HTML snippet for embedding the video in the HTML page.</p>
 					</div>
 				</div>
 			</div>
 
-			<div class="col-xs-12 col-xsp-6 col-sm-6 col-md-4 col-lg-4">
-				<div class="popover">
-					<h4 class="popover-title"><i class="icon-ok icon-white"></i> E-mail notification</h4>
-					<div class="popover-content">
-						<p>IPCamLive notifies you in case your camera cannot be connected.</p>
-					</div>
-				</div>
-			</div>
 
 			<div class="col-xs-12 col-xsp-6 col-sm-6 col-md-4 col-lg-4">
 				<div class="popover">
@@ -143,7 +135,7 @@
 				<div class="popover">
 					<h4 class="popover-title"><i class="icon-ok icon-white"></i> Unlimited viewers</h4>
 					<div class="popover-content">
-						<p>IPCamLive can serve as many viewers as you have.</p>
+						<p>Camera Server can serve as many viewers as you have.</p>
 					</div>
 				</div>
 			</div>
@@ -152,7 +144,7 @@
 				<div class="popover">
 					<h4 class="popover-title"><i class="icon-ok icon-white"></i> HD Video stream support</h4>
 					<div class="popover-content">
-						<p>IPCamLive can receive and display high resolution video streams (eg. Full HD).</p>
+						<p>Camera Server can receive and display high resolution video streams (eg. Full HD).</p>
 					</div>
 				</div>
 			</div>
@@ -161,7 +153,7 @@
 				<div class="popover">
 					<h4 class="popover-title"><i class="icon-ok icon-white"></i> Privacy control</h4>
 					<div class="popover-content">
-						<p>IPCamLive can blur the motion part of the image in order to make the faces unrecognizable on the video streams.</p>
+						<p>Camera Server can blur the motion part of the image in order to make the faces unrecognizable on the video streams.</p>
 					</div>
 				</div>
 			</div>
@@ -170,7 +162,7 @@
 				<div class="popover">
 					<h4 class="popover-title"><i class="icon-ok icon-white"></i> Audio support</h4>
 					<div class="popover-content">
-						<p>IPCamLive can also broadcast the audio together with the video.</p>
+						<p>Camera Server can also broadcast the audio together with the video.</p>
 					</div>
 				</div>
 			</div>
@@ -180,28 +172,11 @@
 				<div class="popover">
 					<h3 class="popover-title"><i class="icon-ok icon-white"></i> RTSP/H.264 support</h3>
 					<div class="popover-content">
-						<p>IPCamLive supports RTSP video streaming protocol and can handle H.264 video compression.</p>
+						<p>Camera Server supports RTSP video streaming protocol and can handle H.264 video compression.</p>
 					</div>
 				</div>
 			</div>
 
-			<div class="col-xs-12 col-xsp-6 col-sm-6 col-md-4 col-lg-4">
-				<div class="popover">
-					<h3 class="popover-title"><i class="icon-ok icon-white"></i> Time-lapse video</h3>
-					<div class="popover-content">
-						<p>IPCamLive can generate Time-lapse video clip(s) from the live video stream.</p>
-					</div>
-				</div>
-			</div>
-
-			<div class="col-xs-12 col-xsp-6 col-sm-6 col-md-4 col-lg-4">
-				<div class="popover">
-					<h3 class="popover-title"><i class="icon-ok icon-white"></i> HD Video support</h3>
-					<div class="popover-content">
-						<p>IPCamLive supports Full HD video resolution for excellent video quality.</p>
-					</div>
-				</div>
-			</div>
 
 		</div>
 

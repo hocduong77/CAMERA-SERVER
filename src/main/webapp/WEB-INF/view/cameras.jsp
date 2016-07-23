@@ -45,7 +45,11 @@ $(document).ready(function() {
 				<th></th>
 			</tr>
 		</thead>
-		<tbody><tr><td id="camerastable_28209_alias">566c66068ae0c</td><td id="camerastable_28209_name" class="hidden-xs hidden-sm">566c66068ae0c</td><td id="camerastable_28209_url" class="hidden-xs hidden-sm">rtsp://113.162.208.78:554/live.sdp</td><td id="camerastable_28209_enabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></td><td id="camerastable_28209_streamavailable"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></td><td class="rightcell"><a href="https://ipcamlive.com/camerapage?id=28209" class="btn btn-default" title="Camera page"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></td></tr></tbody>
+		<tbody>
+		<c:forEach items="${cameras}" var="camera">    
+		<tr><td id="camerastable_28209_alias"><c:out value="${camera.alias}"/></td><td id="camerastable_28209_name" class="hidden-xs hidden-sm"><c:out value="${camera.name}"/></td><td id="camerastable_28209_url" class="hidden-xs hidden-sm"><c:out value="${camera.cameraUrl}"/></td><td id="camerastable_28209_enabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></td><td id="camerastable_28209_streamavailable"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></td><td class="rightcell"><a href="<c:url value="/saveCamera/id" />" class="btn btn-default" title="Camera page"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></td></tr>
+		</c:forEach>
+		</tbody>
 	</table>
 </div>
 
@@ -55,18 +59,6 @@ $(document).ready(function() {
 
 </div>
 
-	<footer class="footer">
-	<div class="container">
-		<p class="credit pull-right hidden-xs"><a href="https://ipcamlive.com/cameras#">Back to top</a></p>
-		<p class="credit">Copyright © 2016 IPCamLive Inc. ·
-			<a href="https://ipcamlive.com/contact">Contact the IPCamLive team</a> ·
-			<a href="https://ipcamlive.com/howdoesitwork">How does it work?</a>·
-			<a href="https://ipcamlive.com/pricing">Pricing</a>·
-			<a href="https://ipcamlive.com/faqs">FAQs</a>
-		</p>
-	</div>
-</footer>
-	<script src="./cameramenu_files/bootstrap.min.js"></script>
 
 
 </body></html>
