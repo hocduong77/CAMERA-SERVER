@@ -28,6 +28,7 @@ public class MySimpleUrlAuthenticationSuccessHandler implements AuthenticationSu
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.setMaxInactiveInterval(20*60);
+            session.setAttribute("email", authentication.getName());
         }
         clearAuthenticationAttributes(request);
     }
@@ -44,6 +45,7 @@ public class MySimpleUrlAuthenticationSuccessHandler implements AuthenticationSu
     }
 
     protected String determineTargetUrl(Authentication authentication) {
+    	
         boolean isUser = false;
         boolean isAdmin = false;
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();

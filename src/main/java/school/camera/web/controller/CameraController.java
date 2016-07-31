@@ -1,7 +1,9 @@
 package school.camera.web.controller;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -11,6 +13,8 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,14 +25,21 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import school.camera.persistence.dao.CameraRepo;
+import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.Camera;
+import school.camera.persistence.model.User;
 import school.camera.persistence.service.CameraDto;
+import school.camera.persistence.service.Message;
 
 @Controller
 public class CameraController {
 
     @Autowired
     private CameraRepo cameraRepo;
+    
+
+    @Autowired
+    private UserRepository userRepo;
     
 	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
@@ -37,8 +48,11 @@ public class CameraController {
 	}
 
 	@RequestMapping(value = "/cameras", method = RequestMethod.GET)
-	public ModelAndView showCamera(WebRequest request, Model model) {
+	public ModelAndView showCamera(HttpServletRequest  request, Model model) {
 		LOGGER.info("Rendering camera page.");
+		HttpSession session = request.getSession(false);
+		String username = (String) session.getAttribute("username");
+		LOGGER.info("username {}", username);
 		List<CameraDto> cameras = getListCameras();
 		return new ModelAndView("cameras","cameras", cameras);
 	}
@@ -81,6 +95,11 @@ public class CameraController {
 		camera.setAlias(alias);
 		camera.setName(alias);
 		camera.setCameraUrl(cameraUrl);
+		String email = (String) session.getAttribute("email");
+		LOGGER.info("username {}", email);
+		User user = userRepo.findByEmail(email);
+		camera.setUser(user);
+		//user.getCameras().add(camera);
 		cameraRepo.save(camera);
 		
 		List<CameraDto> cameras = getListCameras();
@@ -118,5 +137,6 @@ public class CameraController {
 		}
 		return cameraDtos;
 	}
+
 
 }
