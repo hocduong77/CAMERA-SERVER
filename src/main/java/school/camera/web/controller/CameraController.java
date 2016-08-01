@@ -46,6 +46,13 @@ public class CameraController {
 	public CameraController() {
 
 	}
+	
+	@RequestMapping(value = "/setting", method = RequestMethod.GET)
+	public String settingCamera(HttpServletRequest  request, Model model) {
+		LOGGER.info("Rendering registration page.");
+		return "setting";
+	}
+
 
 	@RequestMapping(value = "/cameras", method = RequestMethod.GET)
 	public ModelAndView showCamera(HttpServletRequest  request, Model model) {
