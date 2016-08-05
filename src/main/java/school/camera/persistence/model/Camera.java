@@ -1,6 +1,8 @@
 package school.camera.persistence.model;
 
 
+import java.util.Date;
+
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -22,12 +24,33 @@ public class Camera {
 	
 	private String name;
 	
+	private String streamUrl;
+	
 	private boolean enabled;
+	
+	private boolean capture;
+	
+	private boolean record;
+	
+	private int captureTime;
+	
+	private int recordTime;
+	
+	private Date recordSchedule;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "userid", nullable = false)
 	private User user;
 	
+	
+
+	public String getStreamUrl() {
+		return streamUrl;
+	}
+
+	public void setStreamUrl(String streamUrl) {
+		this.streamUrl = streamUrl;
+	}
 
 	public User getUser() {
 		return user;
@@ -77,6 +100,45 @@ public class Camera {
 		this.enabled = enabled;
 	}
 
+	public boolean isCapture() {
+		return capture;
+	}
+
+	public void setCapture(boolean capture) {
+		this.capture = capture;
+	}
+
+	public boolean isRecord() {
+		return record;
+	}
+
+	public void setRecord(boolean record) {
+		this.record = record;
+	}
+
+	public int getCaptureTime() {
+		return captureTime;
+	}
+
+	public void setCaptureTime(int captureTime) {
+		this.captureTime = captureTime;
+	}
+
+	public int getRecordTime() {
+		return recordTime;
+	}
+
+	public void setRecordTime(int recordTime) {
+		this.recordTime = recordTime;
+	}
+
+	public Date getRecordSchedule() {
+		return recordSchedule;
+	}
+
+	public void setRecordSchedule(Date recordSchedule) {
+		this.recordSchedule = recordSchedule;
+	}
 
 
 }

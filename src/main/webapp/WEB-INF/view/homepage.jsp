@@ -73,9 +73,13 @@
 	</nav>
 	<div class="content">
 		<div class="row">
+		<c:forEach items="${cameras}" var="camera" varStatus="status">
+		<c:choose>
+		<c:when test="${status.index == 0}">
 			<div class="col-xs-12 margin-bottom">
 				<div class="video-content text-center">
-					<img src="<c:url value="/resources/dashboard/img.png"/>" alt="">
+				<video id="video" src="<c:out value="${camera.streamUrl}"/>" type="video/ogg; codecs=theora" autoplay="autoplay" alt="" />
+					 <%-- <img src="<c:url value="/resources/dashboard/img.png"/>" alt="">  --%>
 					<div class="video-controls">
 						<a href="javascript:;" class="play-stop curr-play">Play</a>
 						<button type="button" class="capture" data-toggle="modal" data-target=".capture-modal">Capture</button>
@@ -83,9 +87,11 @@
 					</div>
 				</div>
 			</div>
+		</c:when>
+		<c:when test="${status.index % 2 == 1}">
 			<div class="col-sm-6 margin-bottom padding-right">
 				<div class="video-content text-center">
-					<img src="<c:url value="/resources/dashboard/img.png"/>" alt="">
+					<video id="video" src="<c:out value="${camera.streamUrl}"/>" type="video/ogg; codecs=theora" autoplay="autoplay" alt="" />
 					<div class="video-controls">
 						<a href="javascript:;" class="play-stop curr-play">Play</a>
 						<button type="button" class="capture" data-toggle="modal" data-target=".capture-modal">Capture</button>
@@ -93,16 +99,21 @@
 					</div>
 				</div>
 			</div>
+			</c:when>
+			<c:otherwise>
 			<div class="col-sm-6 margin-bottom padding-left">
 				<div class="video-content text-center">
-					<img src="<c:url value="/resources/dashboard/img.png"/>" alt="">
+					<video id="video" src="<c:out value="${camera.streamUrl}"/>" type="video/ogg; codecs=theora" autoplay="autoplay" alt="" />
 					<div class="video-controls">
 						<a href="javascript:;" class="play-stop curr-play">Play</a>
 						<button type="button" class="capture" data-toggle="modal" data-target=".capture-modal">Capture</button>
 						<button class="record">Record</button>
 					</div>
 				</div>
-			</div>
+			</div> 
+			</c:otherwise>
+			</c:choose>
+			</c:forEach>
 		</div>
 	</div>
 </div>

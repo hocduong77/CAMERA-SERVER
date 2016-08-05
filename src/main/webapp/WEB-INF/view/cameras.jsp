@@ -47,7 +47,7 @@ $(document).ready(function() {
 		</thead>
 		<tbody>
 		<c:forEach items="${cameras}" var="camera">    
-		<tr><td id="camerastable_28209_alias"><c:out value="${camera.alias}"/></td><td id="camerastable_28209_name" class="hidden-xs hidden-sm"><c:out value="${camera.name}"/></td><td id="camerastable_28209_url" class="hidden-xs hidden-sm"><c:out value="${camera.cameraUrl}"/></td><td id="camerastable_28209_enabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></td><td class="rightcell"><a href="<c:url value="/setting" />" class="btn btn-default" title="Camera page"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></td></tr>
+		<tr><td id="camerastable_28209_alias"><c:out value="${camera.alias}"/></td><td id="camerastable_28209_name" class="hidden-xs hidden-sm"><c:out value="${camera.name}"/></td><td id="camerastable_28209_url" class="hidden-xs hidden-sm"><c:out value="${camera.cameraUrl}"/></td><td id="camerastable_28209_enabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></td><td class="rightcell"><a href="<c:url value="/setting/${camera.cameraId}" />" class="btn btn-default" title="Camera page"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></td></tr>
 		</c:forEach>
 		</tbody>
 	</table>

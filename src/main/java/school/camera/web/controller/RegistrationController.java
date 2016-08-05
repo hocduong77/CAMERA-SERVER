@@ -54,10 +54,6 @@ public class RegistrationController {
         return "index";
     } 
     
-    @RequestMapping(value = "/homepage", method = RequestMethod.GET)
-    public String homepage() {
-        return "homepage";
-    } 
     
     @RequestMapping(value = "/user/registration", method = RequestMethod.GET)
     public String showRegistrationForm(WebRequest request, Model model) {
