@@ -24,7 +24,7 @@ public class CameraDto {
 	
 	private int recordTime;
 	
-	private Date recordSchedule;
+	private String recordSchedule;
 
 	
 	public boolean isCapture() {
@@ -61,11 +61,12 @@ public class CameraDto {
 
 
 
-	public Date getRecordSchedule() {
+
+	public String getRecordSchedule() {
 		return recordSchedule;
 	}
 
-	public void setRecordSchedule(Date recordSchedule) {
+	public void setRecordSchedule(String recordSchedule) {
 		this.recordSchedule = recordSchedule;
 	}
 

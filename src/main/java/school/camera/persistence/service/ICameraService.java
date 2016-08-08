@@ -1,5 +1,10 @@
 package school.camera.persistence.service;
 
-public interface ICameraService {
+import java.io.IOException;
 
+public interface ICameraService {
+	void capture(Long cameraId) throws IOException;
+	
+	void record(Long cameraId) throws IOException;
+	
 }

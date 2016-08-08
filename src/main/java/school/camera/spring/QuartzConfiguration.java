@@ -5,9 +5,21 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 
+import school.camera.event.schedule.SchedulerCaptureJob;
+import school.camera.event.schedule.SchedulerRecordJob;
+import school.camera.persistence.model.Camera;
+import school.camera.persistence.service.ICameraService;
+
 import javax.annotation.PostConstruct;
 
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +33,8 @@ public class QuartzConfiguration {
   private Scheduler scheduler;
 
 
-//  @Autowired
-//  private ICameraService cameraService;
+  @Autowired
+  private ICameraService cameraService;
 //
 //  @Autowired
 //  private ICameraRepo cameraRepo;
@@ -35,9 +47,10 @@ public class QuartzConfiguration {
   @PostConstruct
   public void schedulerFactoryBean() {
     LOGGER.info("Creating scheduler..................................");
-		// try {
-		// this.scheduler = new StdSchedulerFactory().getScheduler();
-		// scheduler.start();
+		 try {
+		 this.scheduler = new StdSchedulerFactory().getScheduler();
+		 scheduler.start();
+		 
 		// // add trigger from db.
 		// // scheduleInitializer();
 		// // create schedule to run check current view streaming.
@@ -73,57 +86,93 @@ public class QuartzConfiguration {
 		// LOGGER.info("create capture
 		// Trigger.............................END");
 		//
-		// } catch (SchedulerException e) {
-		// LOGGER.error("Create scheduler error.");
-		// }
+		 } catch (SchedulerException e) {
+		 LOGGER.error("Create scheduler error.");
+		 }
     LOGGER.info("Created scheduler..................................");
   }
 
-//  
-//  /**
-//   * create new record trigger then add to scheduler.
-//   * 
-//   * @param seconds .
-//   * @param id .
-//   * @throws SchedulerException .
-//   */
-//  public void createRecordTrigger(Camera camera) throws SchedulerException {
-//    LOGGER.info("create  record Trigger.............................START");
-//    JobKey jobKey = new JobKey(Integer.toString(camera.getCameraId()), "record");
-//    JobDetail schedulerMasterJobDetail = JobBuilder.newJob(SchedulerRecordJob.class)
-//        .withIdentity(jobKey).storeDurably(false).build();
-//
-//    Trigger schedulerMasterTrigger = null;
-//    if (camera.isRecordRepeat() == true) {
-//      schedulerMasterTrigger =
-//          TriggerBuilder.newTrigger().withIdentity(Integer.toString(camera.getCameraId()), "record")
-//              .startAt(camera.getRecordSchedual())
-//              .withSchedule(
-//                  SimpleScheduleBuilder.simpleSchedule().withIntervalInHours(24).repeatForever())
-//              .build();
-//    } else {
-//      schedulerMasterTrigger =
-//          TriggerBuilder.newTrigger().withIdentity(Integer.toString(camera.getCameraId()), "record")
-//              .startAt(camera.getRecordSchedual()).build();
-//    }
-//
-//    schedulerMasterJobDetail.getJobDataMap().put(ActivityJob.SERVICE, cameraService);
-//    LOGGER.info("record capture trigger.");
-//    try {
-//      if (scheduler != null && !scheduler.checkExists(jobKey)) {
-//        this.scheduler.scheduleJob(schedulerMasterJobDetail, schedulerMasterTrigger);
-//      } else if (scheduler.checkExists(jobKey)) {
-//        LOGGER.info("reschedual jobKey exit");
-//        this.scheduler.deleteJob(jobKey);
-//        this.scheduler.scheduleJob(schedulerMasterJobDetail, schedulerMasterTrigger);
-//      }
-//    } catch (SchedulerException se) {
-//      LOGGER.error("Can't schedule scheduler master.", se);
-//      throw se;
-//    }
-//    LOGGER.info("create record Trigger.............................END");
-//
-//  }
+  /**
+   * create new record trigger then add to scheduler.
+   * 
+   * @param seconds .
+   * @param id .
+   * @throws SchedulerException .
+   */
+  public void createCaptureTrigger(Camera camera) throws SchedulerException {
+    LOGGER.info("create  record Trigger.............................START");
+    JobKey jobKey = new JobKey(Long.toString(camera.getCameraid()), "capture");
+    JobDetail schedulerMasterJobDetail = JobBuilder.newJob(SchedulerCaptureJob.class)
+        .withIdentity(jobKey).storeDurably(false).build();
+
+    Trigger schedulerMasterTrigger = null;
+    if (camera.isCapture() == true) {
+      schedulerMasterTrigger =
+          TriggerBuilder.newTrigger().withIdentity(Long.toString(camera.getCameraid()), "capture")
+              .startNow()
+              .withSchedule(
+                  SimpleScheduleBuilder.simpleSchedule().withIntervalInMinutes(camera.getCaptureTime()).repeatForever())
+              .build();
+    }
+
+    schedulerMasterJobDetail.getJobDataMap().put(SchedulerCaptureJob.SERVICE, cameraService);
+    LOGGER.info("capture trigger.");
+    try {
+      if (scheduler != null && !scheduler.checkExists(jobKey)) {
+        this.scheduler.scheduleJob(schedulerMasterJobDetail, schedulerMasterTrigger);
+      } else if (scheduler.checkExists(jobKey)) {
+        LOGGER.info("reschedual jobKey exit");
+        this.scheduler.deleteJob(jobKey);
+        this.scheduler.scheduleJob(schedulerMasterJobDetail, schedulerMasterTrigger);
+      }
+    } catch (SchedulerException se) {
+      LOGGER.error("Can't schedule scheduler master.", se);
+      throw se;
+    }
+    LOGGER.info("create record Trigger.............................END");
+
+  }
+  
+  /**
+   * create new record trigger then add to scheduler.
+   * 
+   * @param seconds .
+   * @param id .
+   * @throws SchedulerException .
+   */
+  public void createRecordTrigger(Camera camera) throws SchedulerException {
+    LOGGER.info("create  record Trigger.............................START");
+    JobKey jobKey = new JobKey(Long.toString(camera.getCameraid()), "record");
+    JobDetail schedulerMasterJobDetail = JobBuilder.newJob(SchedulerRecordJob.class)
+        .withIdentity(jobKey).storeDurably(false).build();
+
+    Trigger schedulerMasterTrigger = null;
+    if (camera.isRecord() == true) {
+      schedulerMasterTrigger =
+          TriggerBuilder.newTrigger().withIdentity(Long.toString(camera.getCameraid()), "record")
+              .startAt(camera.getRecordSchedule())
+              .withSchedule(
+                  SimpleScheduleBuilder.simpleSchedule().withIntervalInHours(24).repeatForever())
+              .build();
+    }
+
+    schedulerMasterJobDetail.getJobDataMap().put(SchedulerRecordJob.SERVICE, cameraService);
+    LOGGER.info("record capture trigger.");
+    try {
+      if (scheduler != null && !scheduler.checkExists(jobKey)) {
+        this.scheduler.scheduleJob(schedulerMasterJobDetail, schedulerMasterTrigger);
+      } else if (scheduler.checkExists(jobKey)) {
+        LOGGER.info("reschedual jobKey exit");
+        this.scheduler.deleteJob(jobKey);
+        this.scheduler.scheduleJob(schedulerMasterJobDetail, schedulerMasterTrigger);
+      }
+    } catch (SchedulerException se) {
+      LOGGER.error("Can't schedule scheduler master.", se);
+      throw se;
+    }
+    LOGGER.info("create record Trigger.............................END");
+
+  }
 //
 //  /**
 //   * create schedule when restart server.
@@ -159,18 +208,18 @@ public class QuartzConfiguration {
 //   * @param id camera id.
 //   * @throws SchedulerException .
 //   */
-//  public void deleteJob(int id, String group) throws SchedulerException {
-//    LOGGER.info("DELETE JOB.............................START");
-//    JobKey jobKey = new JobKey(Integer.toString(id), group);
-//    if (scheduler.checkExists(jobKey)) {
-//      LOGGER.info("DELETE JOB");
-//      this.scheduler.deleteJob(jobKey);
-//    } else {
-//      LOGGER.info("JOB KEY IS NOT EXIT");
-//
-//
-//    }
-//  }
+  public void deleteJob(Long id, String group) throws SchedulerException {
+    LOGGER.info("DELETE JOB.............................START");
+    JobKey jobKey = new JobKey(Long.toString(id), group);
+    if (scheduler.checkExists(jobKey)) {
+      LOGGER.info("DELETE JOB");
+      this.scheduler.deleteJob(jobKey);
+    } else {
+      LOGGER.info("JOB KEY IS NOT EXIT");
+
+
+    }
+  }
 
 
 }

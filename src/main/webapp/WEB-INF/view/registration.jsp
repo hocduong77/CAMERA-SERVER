@@ -44,7 +44,7 @@
 					<div id="alert_placeholder"></div>
 
 					<div id="registerdiv">
-					<form:form modelAttribute="user" method="post" id="registerform" class="form-signin" novalidate="novalidate"  enctype="utf8">
+					<form:form modelAttribute="user"  method="post" id="registerform" class="form-signin" novalidate="novalidate"  enctype="utf8">
 			<h2 class="form-signin-heading">Sign Up</h2>
 			
 			<form:input path="firstName" value=""  type="text" id="firstnameedit" name="firstnameedit" class="form-control" placeholder="First name"/>
