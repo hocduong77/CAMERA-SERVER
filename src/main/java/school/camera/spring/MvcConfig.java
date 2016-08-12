@@ -55,6 +55,8 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
         registry.addViewController("/registration.html");
         registry.addViewController("/successRegister.html");
         registry.addViewController("/index.html");
+        registry.addViewController("/image.html");
+        registry.addViewController("/video.html");
     }
 
     @Bean
@@ -68,7 +70,7 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/resources/**").addResourceLocations("/", "/resources/");
+        registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
     }
 
     @Override

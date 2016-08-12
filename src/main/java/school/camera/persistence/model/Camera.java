@@ -2,6 +2,8 @@ package school.camera.persistence.model;
 
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -10,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 @Entity
 public class Camera {
@@ -42,7 +45,9 @@ public class Camera {
 	@JoinColumn(name = "userid", nullable = false)
 	private User user;
 	
-	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "camera")
+	private Set<Image> image = new HashSet<Image>(0);
+
 
 	public String getStreamUrl() {
 		return streamUrl;

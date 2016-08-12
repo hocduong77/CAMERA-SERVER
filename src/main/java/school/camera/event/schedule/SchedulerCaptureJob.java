@@ -39,6 +39,9 @@ public class SchedulerCaptureJob implements Job {
 				cameraService.capture(cameraId);
 			} catch (IOException e) {
 				LOGGER.error("  IOException  {}", e);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 

@@ -35,8 +35,10 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import school.camera.persistence.dao.CameraRepo;
+import school.camera.persistence.dao.IImageRepo;
 import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.Camera;
+import school.camera.persistence.model.Image;
 import school.camera.persistence.model.User;
 import school.camera.persistence.service.CameraDto;
 import school.camera.persistence.service.Message;
@@ -49,6 +51,9 @@ public class CameraController {
 	@Autowired
 	private CameraRepo cameraRepo;
 
+	@Autowired
+	private IImageRepo imageRepo;
+	
 	@Autowired
 	private UserRepository userRepo;
 	@Autowired
@@ -210,6 +215,32 @@ public class CameraController {
 		return "addcamera";
 	}
 
+
+	@RequestMapping(value = "/capture", method = RequestMethod.POST)
+	public @ResponseBody String capture(HttpServletRequest request, Model model) throws IOException, InterruptedException {
+		Long cameraId = Long.parseLong(request.getParameter("cameraId"));
+		LOGGER.info("Rendering test api.{}", cameraId);
+		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
+		String fileName = df.format(new Date());
+		Camera camera = cameraRepo.findByCameraid(cameraId);
+		String cmd = "vlc " + camera.getCameraUrl()
+				+ "  --rate=1 --video-filter=scene --vout=dummy --start-time=0 --stop-time=1 --scene-format=jpeg --scene-prefix="
+				+ fileName
+				+ " --scene-replace --scene-path=C:\\Users\\BinhHoc\\Documents\\GitHub\\CAMERA-SERVER\\src\\main\\webapp\\resources\\images"
+				+ " vlc://quit";
+		LOGGER.info("cmd ==== {}", cmd);
+		Runtime runtime = Runtime.getRuntime();		
+		Process process = runtime.exec(cmd);
+		process.waitFor();	
+		String result = "http://localhost:8080/images/" + fileName + ".jpeg";	
+		Image image = new Image();
+		image.setCamera(camera);
+		image.setDate(new Date());
+		image.setImageUrl(result);
+		imageRepo.save(image);
+		return result;
+	}
+	
 	@RequestMapping(value = "/test", method = RequestMethod.POST)
 	public @ResponseBody String testCamera(HttpServletRequest request, Model model) throws IOException {
 		String url = request.getParameter("url");
@@ -221,6 +252,7 @@ public class CameraController {
 				+ " :network-caching=1000 :sout=#transcode{vcodec=theo,vb=1600,scale=1,acodec=none}:http{mux=ogg,dst=:"
 				+ Integer.toString(port) + "/stream} :no-sout-rtp-sap :no-sout-standard-sap :sout-keep vlc://quit";
 		LOGGER.info("cmd ==== {}", cmd);
+		
 		Runtime runtime = Runtime.getRuntime();
 
 		runtime.exec(cmd);

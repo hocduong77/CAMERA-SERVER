@@ -9,5 +9,6 @@ import school.camera.persistence.model.User;;
 
 public interface CameraRepo extends JpaRepository<Camera, Long>{
 	public List<Camera> findByUser(User user);
+	public List<Camera> findByUserAndAlias(User user, String alias);
 	public Camera findByCameraid(Long cameraId);
 }

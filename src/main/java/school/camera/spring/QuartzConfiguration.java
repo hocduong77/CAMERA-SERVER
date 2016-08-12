@@ -111,7 +111,7 @@ public class QuartzConfiguration {
           TriggerBuilder.newTrigger().withIdentity(Long.toString(camera.getCameraid()), "capture")
               .startNow()
               .withSchedule(
-                  SimpleScheduleBuilder.simpleSchedule().withIntervalInMinutes(camera.getCaptureTime()).repeatForever())
+                  SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(camera.getCaptureTime()).repeatForever())
               .build();
     }
 

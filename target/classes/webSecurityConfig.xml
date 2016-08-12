@@ -25,6 +25,9 @@
 		<intercept-url pattern="/test*" access="isAuthenticated()" />
 		<intercept-url pattern="/saveCamera*" access="isAuthenticated()" />
 		<intercept-url pattern="/setting*" access="isAuthenticated()" />
+		<intercept-url pattern="/capture*" access="isAuthenticated()" />
+		<intercept-url pattern="/image*" access="isAuthenticated()" />
+		<intercept-url pattern="/video*" access="isAuthenticated()" />
 	<intercept-url pattern="/*" access="permitAll" />
 		<form-login login-page='/login.html'
 			authentication-failure-url="/login.html?error=true"

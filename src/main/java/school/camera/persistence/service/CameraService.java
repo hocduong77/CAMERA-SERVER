@@ -13,8 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import school.camera.persistence.dao.CameraRepo;
+import school.camera.persistence.dao.IImageRepo;
 import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.Camera;
+import school.camera.persistence.model.Image;
 
 @Service
 @Transactional
@@ -25,8 +27,11 @@ public class CameraService implements ICameraService {
 	@Autowired
 	private CameraRepo cameraRepo;
 
+	@Autowired
+	private IImageRepo imageRepo;
+	
 	@Override
-	public void capture(Long cameraId) throws IOException {
+	public void capture(Long cameraId) throws IOException, InterruptedException {
 		LOGGER.info(">>>>>> START CAPTURE >>>>>>");
 		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
 		String fileName = df.format(new Date());
@@ -38,8 +43,14 @@ public class CameraService implements ICameraService {
 				+ " vlc://quit";
 		LOGGER.info("cmd ==== {}", cmd);
 		Runtime runtime = Runtime.getRuntime();
-		runtime.exec(cmd);
-
+		Process process = runtime.exec(cmd);
+		process.waitFor();	
+		String result = "http://localhost:8080/images/" + fileName + ".jpeg";	
+		Image image = new Image();
+		image.setCamera(camera);
+		image.setDate(new Date());
+		image.setImageUrl(result);
+		imageRepo.save(image);
 		LOGGER.info(">>>>>> END CAPTURE >>>>>>");
 	}
 

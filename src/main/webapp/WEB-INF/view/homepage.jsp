@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ include file="menu.jsp" %>
 <%@ taglib prefix="sec"
 	uri="http://www.springframework.org/security/tags"%>
 <%@taglib uri="http://www.springframework.org/tags" prefix="spring"%>
@@ -37,7 +38,7 @@
 
 <body>
 <div class="container">
-	<!-- Static navbar -->
+	<%-- <!-- Static navbar -->
 	<nav class="navbar navbar-inverse navbar-default">
 		<div class="container-fluid">
 			<div class="navbar-header">
@@ -54,8 +55,8 @@
 				<ul class="nav navbar-nav">
 						<li class=""><a href="<c:url value="/homepage" />">Dashboard</a></li>
 						<li><a href="<c:url value="/cameras" />">Cameras</a></li>
-						<li><a href="<c:url value="/videos" />">Images</a></li>
-						<li><a href="<c:url value="/images" />">Videos</a></li>		
+						<li><a href="<c:url value="/image" />">Images</a></li>
+						<li><a href="<c:url value="/video" />">Videos</a></li>		
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<li class="dropdown">
@@ -70,7 +71,7 @@
 			</div>
 			<!--/.nav-collapse -->
 		</div><!--/.container-fluid -->
-	</nav>
+	</nav> --%>
 	<div class="content">
 		<div class="row">
 		<c:forEach items="${cameras}" var="camera" varStatus="status">
@@ -78,24 +79,26 @@
 		<c:when test="${status.index == 0}">
 			<div class="col-xs-12 margin-bottom">
 				<div class="video-content text-center">
-				<video id="video" src="<c:out value="${camera.streamUrl}"/>" type="video/ogg; codecs=theora" autoplay="autoplay" alt="" />
-					 <%-- <img src="<c:url value="/resources/dashboard/img.png"/>" alt="">  --%>
-					<div class="video-controls">
+				<video id="video" src="<c:out value="${camera.streamUrl}"/>" type="video/ogg; codecs=theora" autoplay="autoplay" alt="" >									
+				</video>
+				<div class="video-controls">
 						<a href="javascript:;" class="play-stop curr-play">Play</a>
-						<button type="button" class="capture" data-toggle="modal" data-target=".capture-modal">Capture</button>
-						<button class="record">Record</button>
-					</div>
+						<button id="${camera.cameraId}" type="button" onclick="capture(this.id)" class="capture" >Capture</button>
+						<!-- <button class="record">Record</button> -->
+					</div>	
 				</div>
+				
 			</div>
 		</c:when>
 		<c:when test="${status.index % 2 == 1}">
 			<div class="col-sm-6 margin-bottom padding-right">
 				<div class="video-content text-center">
-					<video id="video" src="<c:out value="${camera.streamUrl}"/>" type="video/ogg; codecs=theora" autoplay="autoplay" alt="" />
+					<video id="video" src="<c:out value="${camera.streamUrl}"/>" type="video/ogg; codecs=theora" autoplay="autoplay" alt="" >
+					</video>
 					<div class="video-controls">
 						<a href="javascript:;" class="play-stop curr-play">Play</a>
-						<button type="button" class="capture" data-toggle="modal" data-target=".capture-modal">Capture</button>
-						<button class="record">Record</button>
+						<button id="${camera.cameraId}" type="button" onclick="capture(this.id)" class="capture" >Capture</button>
+						<!-- <button class="record">Record</button> -->
 					</div>
 				</div>
 			</div>
@@ -103,11 +106,12 @@
 			<c:otherwise>
 			<div class="col-sm-6 margin-bottom padding-left">
 				<div class="video-content text-center">
-					<video id="video" src="<c:out value="${camera.streamUrl}"/>" type="video/ogg; codecs=theora" autoplay="autoplay" alt="" />
+					<video id="video" src="<c:out value="${camera.streamUrl}"/>" type="video/ogg; codecs=theora" autoplay="autoplay" alt="" >
+					</video>
 					<div class="video-controls">
-						<a href="javascript:;" class="play-stop curr-play">Play</a>
-						<button type="button" class="capture" data-toggle="modal" data-target=".capture-modal">Capture</button>
-						<button class="record">Record</button>
+						 <a href="javascript:;" class="play-stop curr-play">Play</a> 
+						<button id="${camera.cameraId}" type="button" onclick="capture(this.id)" class="capture" >Capture</button>
+						<!-- <button class="record">Record</button> -->
 					</div>
 				</div>
 			</div> 
@@ -118,7 +122,7 @@
 	</div>
 </div>
 <!--popup-->
-<div class="modal fade capture-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+<div id="myModal"  class="modal fade capture-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -126,14 +130,30 @@
 				<h4 class="modal-title" id="myModalLabel">Capture</h4>
 			</div>
 			<div class="modal-body text-center">
-				<img src="<c:url value="/resources/dashboard/img.png"/>" alt="">
+				<img id="my_image" src="<c:url value="/resources/dashboard/img.png"/>" alt="">
 			</div>
-			<div class="modal-footer">
+			<!-- <div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 				<button type="button" class="btn btn-primary">Save</button>
-			</div>
+			</div> -->
 		</div>
 	</div>
 </div>
+<script>
+function capture(cameraId) {
+	console.log("cameraId" + cameraId);
+	$.ajax({
+		type: "post",
+		url : 'capture' , 
+		data:'cameraId=' + cameraId ,
+		success : function(data) {
+			var str = data;
+			console.log("data " +data);
+			$("#my_image").attr("src",data);
+			$('#myModal').modal('show');
+		}
+	});
+}
+</script>
 </body>
 </html>

@@ -17,5 +17,6 @@ $(document).ready(function(){
         } else {
             curr_active.addClass('active');
         }
-    })
+    });
+    $('.video').fancybox();
 })

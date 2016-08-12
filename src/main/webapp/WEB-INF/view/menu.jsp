@@ -27,12 +27,7 @@
 	<script src="<c:url value="/resources/dashboard/script.js"/>"></script>
 	<script src="<c:url value="/resources/dashboard/jquery.datetimepicker.js"/>"></script>
 	<script src="<c:url value="/resources/dashboard/jquery.validate.min.js"/>"></script>
-	<!-- <script src="./setting_files/jquery.datetimepicker.js"></script> -->
-		<!-- <link href="./setting_files/bootstrap.css" rel="stylesheet"> -->
-		<!-- <link href="./setting_files/jquery.datetimepicker.css" rel="stylesheet"> -->
-		<!-- <script src="./setting_files/jquery.validate.min.js"></script> -->
-		<!-- <link href="./setting_files/jquery.validate.css" rel="stylesheet"> -->
-		<link href="<c:url value="/resources/dashboard/jquery.validate.css"/>" rel="stylesheet">
+	<link href="<c:url value="/resources/dashboard/jquery.validate.css"/>" rel="stylesheet">
 	<link href="<c:url value="/resources/dashboard/jquery.datetimepicker.css"/>" rel="stylesheet">
 	<link href="<c:url value="/resources/dashboard/jquery-ui-1.10.0.custom.min.css"/>" rel="stylesheet">
 	<link href="<c:url value="/resources/dashboard/skin.css"/>" rel="stylesheet">
@@ -63,8 +58,8 @@
 				<ul class="nav navbar-nav">
 						<li class=""><a href="<c:url value="/homepage" />">Dashboard</a></li>
 						<li><a href="<c:url value="/cameras" />">Camera</a></li>
-						<li><a href="<c:url value="/videos" />">Images</a></li>
-						<li><a href="<c:url value="/images" />">Videos</a></li>		
+						<li><a href="<c:url value="/image" />">Images</a></li>
+						<li><a href="<c:url value="/video" />">Videos</a></li>		
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<li class="dropdown">

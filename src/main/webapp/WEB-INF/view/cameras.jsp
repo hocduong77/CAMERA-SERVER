@@ -53,7 +53,7 @@ $(document).ready(function() {
 	</table>
 </div>
 
-<button id="newcamerabutton" class="btn btn-success nonvisible" style="display: inline-block;">New camera</button><br><br>				</div>
+<a href="addcamera" class="btn btn-success nonvisible" style="display: inline-block;">New camera</a><br><br>				</div>
 
 	</div>
 

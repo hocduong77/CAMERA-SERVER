@@ -16,6 +16,26 @@
 var cameraid = -1;
 var alias = "";
 var connecttime = 0;
+function testFunction() {
+	console.log("test");
+	var cameraurl = $('#urledit').val();
+	console.log("url " + cameraurl);
+	$.ajax({
+		type: "post",
+		url : 'test' , 
+		data:'url=' + cameraurl ,
+		success : function(data) {
+			var str = data;
+			console.log("data" +data);
+			$('#videodiv').show();
+	 	 	$('#playerdiv').html(data);
+		}
+	});
+
+	
+
+	return false;
+};
 
 $(document).ready(function() {
 	jQuery.validator.addMethod("url", function(value, element) {
@@ -31,25 +51,7 @@ $(document).ready(function() {
 	
 	//$('#urledit').val(url);
 
-	$('#cameraform').submit(function() {
-		var cameraurl = $('#urledit').val();
-		console.log("url " + cameraurl);
-		$.ajax({
-			type: "post",
-			url : 'test' , 
-			data:'url=' + cameraurl ,
-			success : function(data) {
-				var str = data;
-				console.log("data" +data);
-				$('#videodiv').show();
-		 	 	$('#playerdiv').html(data);
-			}
-		});
 	
-		
-
-		return false;
-	});
 
 	$('#addbutton').button().click(function() {
 		$('#addbutton').hide();
@@ -105,7 +107,7 @@ http://user:pass@mydomain.com/mjpeg</pre>
 
 	<br>
 
-	<form action="/" method="post" id="cameraform" class="form-horizontal" novalidate="novalidate">
+	<!-- <form action="" method="post" id="cameraform" class="form-horizontal" novalidate="novalidate"> -->
 		<div id="urldiv" class="form-group">
 			<label id="urltextdiv" class="col-sm-2 control-label">URL of your camera:</label>
 			<div class="col-sm-4">
@@ -114,11 +116,12 @@ http://user:pass@mydomain.com/mjpeg</pre>
 		</div>
 		<div class="form-group">
 			<div class="col-sm-offset-2 col-sm-4">
-				<input type="submit" value="Test" id="submitbutton" class="btn btn-primary pull-left">
+			 <button onclick="testFunction()" class="btn btn-success pull-left">Test</button> 
+				<!-- <input type="submit" value="Test" id="submitbutton" class="btn btn-primary pull-left"> -->
 				<div id="formprocessdiv" class="loading pull-left" style="display: none;"></div>
 			</div>
 		</div>
-	</form>
+	<!-- </form> -->
 </div>
 
 <br>
