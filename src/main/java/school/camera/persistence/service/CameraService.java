@@ -14,9 +14,11 @@ import org.springframework.stereotype.Service;
 
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IImageRepo;
+import school.camera.persistence.dao.IVideoRepo;
 import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.Camera;
 import school.camera.persistence.model.Image;
+import school.camera.persistence.model.Video;
 
 @Service
 @Transactional
@@ -29,6 +31,9 @@ public class CameraService implements ICameraService {
 
 	@Autowired
 	private IImageRepo imageRepo;
+	
+	@Autowired
+	private IVideoRepo videoRepo;
 	
 	@Override
 	public void capture(Long cameraId) throws IOException, InterruptedException {
@@ -55,8 +60,8 @@ public class CameraService implements ICameraService {
 	}
 
 	@Override
-	public void record(Long cameraId) throws IOException {
-		LOGGER.info(">>>>>> START CAPTURE >>>>>>");
+	public void record(Long cameraId) throws IOException, InterruptedException {
+		LOGGER.info(">>>>>> START RECORD >>>>>>");
 		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
 		String fileName = df.format(new Date()) + ".ogg";
 		Camera camera = cameraRepo.findByCameraid(cameraId);
@@ -65,9 +70,16 @@ public class CameraService implements ICameraService {
 				+ fileName + " --stop-time=" + camera.getRecordTime() + " vlc://quit";
 		LOGGER.info("cmd ==== {}", cmd);
 		Runtime runtime = Runtime.getRuntime();
-		runtime.exec(cmd);
-
-		LOGGER.info(">>>>>> END CAPTURE >>>>>>");
+		Process process = runtime.exec(cmd);
+		process.waitFor();
+		String result = "http://localhost:8080/videos/" + fileName ;	
+		Video video = new Video();
+		video.setCamera(camera);
+		video.setDate(new Date());
+		video.setVideoUrl(result);
+		videoRepo.save(video);
+		
+		LOGGER.info(">>>>>> END RECORD >>>>>>");
 
 	}
 

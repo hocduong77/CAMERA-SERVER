@@ -36,6 +36,8 @@ public class SchedulerRecordJob implements Job {
 				cameraService.record(cameraId);
 			} catch (IOException e) {
 				LOGGER.error("  IOException  {}", e);
+			} catch (InterruptedException e) {
+				LOGGER.error("  InterruptedException  {}", e);
 			}
 		}
 

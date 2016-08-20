@@ -62,14 +62,8 @@
 						<li><a href="<c:url value="/video" />">Videos</a></li>		
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
-					<li class="dropdown">
-						<a href="/userprofile" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">hoc duong <span class="caret"></span></a>
-						<ul class="dropdown-menu" role="menu">
-							<li><a href="<c:url value="/Profile" />">Profile</a></li>	
-							<li><a href="<c:url value="/changepassword" />">Changepassword</a></li>	
-							<li><a href="<c:url value="/j_spring_security_logout" />">Logout</a></li>	
-						</ul>
-					</li>
+					<li><a href="<c:url value="/j_spring_security_logout" />">Logout</a></li>
+				
 				</ul>
 			</div>
 			<!--/.nav-collapse -->

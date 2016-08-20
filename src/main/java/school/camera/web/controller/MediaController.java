@@ -22,10 +22,12 @@ import org.springframework.web.servlet.ModelAndView;
 
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IImageRepo;
+import school.camera.persistence.dao.IVideoRepo;
 import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.Camera;
 import school.camera.persistence.model.Image;
 import school.camera.persistence.model.User;
+import school.camera.persistence.model.Video;
 import school.camera.persistence.service.CameraDto;
 import school.camera.persistence.service.SearchDto;
 import school.camera.spring.QuartzConfiguration;
@@ -39,6 +41,9 @@ public class MediaController {
 	@Autowired
 	private UserRepository userRepo;
 	
+
+	@Autowired
+	private IVideoRepo videoRepo;
 
 	@Autowired
 	private IImageRepo imageRepo;
@@ -130,23 +135,25 @@ public class MediaController {
 		String email = (String) session.getAttribute("email");
 		LOGGER.info("username {}", email);
 		User user = userRepo.findByEmail(email);
-		/*List<Camera> cameras = cameraRepo.findByUser(user);
-		List<CameraDto> cameraDtos = new ArrayList<CameraDto>();
+		List<Camera> cameras = cameraRepo.findByUser(user);
+		List<String> videoUrls = new ArrayList<String>();
+		List<String> cameraAlias = new ArrayList<String>();
 		for (Camera camera : cameras) {
-			CameraDto cameraDto = new CameraDto();
-			cameraDto.setStreamUrl(startStream(camera));
-			cameraDto.setCameraId(camera.getCameraid());
-			cameraDtos.add(cameraDto);
-		}
-		if (isStream == true) {
-			try {
-				Thread.sleep(15000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			LOGGER.info("camera alias {}", camera.getAlias());
+			cameraAlias.add(camera.getAlias());
+			List<Video> videos = videoRepo.findByCamera(camera);
+			for (Video video : videos) {
+				LOGGER.info("videoUrls {}", video.getVideoUrl());
+				videoUrls.add(video.getVideoUrl());
 			}
-		}*/
+		}
+		SearchDto search = new SearchDto();
+		ModelAndView mav = new ModelAndView("video", "search", search);
+		mav.addObject("cameraAlias", cameraAlias);
+		mav.addObject("videos", videoUrls);
+		return mav;
+	
 
-		return new ModelAndView("video");
+		//return new ModelAndView("video");
 	}
 }

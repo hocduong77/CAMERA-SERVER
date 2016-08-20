@@ -204,8 +204,10 @@ public class CameraController {
 		LOGGER.info("Rendering camera page.");
 		HttpSession session = request.getSession(false);
 		String email = (String) session.getAttribute("email");
+		User user = userRepo.findByEmail(email);
+		
 		LOGGER.info("username {}", email);
-		List<CameraDto> cameras = getListCameras();
+		List<CameraDto> cameras = getListCameras(user);
 		return new ModelAndView("cameras", "cameras", cameras);
 	}
 
@@ -284,7 +286,7 @@ public class CameraController {
 		User user = userRepo.findByEmail(email);
 		camera.setUser(user);
 		cameraRepo.save(camera);
-		List<CameraDto> cameras = getListCameras();
+		List<CameraDto> cameras = getListCameras(user);
 
 		return new ModelAndView("cameras", "cameras", cameras);
 	}
@@ -301,8 +303,8 @@ public class CameraController {
 		return result;
 	}
 
-	private List<CameraDto> getListCameras() {
-		List<Camera> cameras = cameraRepo.findAll();
+	private List<CameraDto> getListCameras(User user ) {
+		List<Camera> cameras = cameraRepo.findByUser(user);
 		List<CameraDto> cameraDtos = new ArrayList<CameraDto>();
 
 		for (Camera camera : cameras) {

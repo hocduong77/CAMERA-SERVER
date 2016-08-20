@@ -150,7 +150,7 @@ public class QuartzConfiguration {
     if (camera.isRecord() == true) {
       schedulerMasterTrigger =
           TriggerBuilder.newTrigger().withIdentity(Long.toString(camera.getCameraid()), "record")
-              .startAt(camera.getRecordSchedule())
+              .startNow()
               .withSchedule(
                   SimpleScheduleBuilder.simpleSchedule().withIntervalInHours(24).repeatForever())
               .build();

@@ -1,5 +1,7 @@
 <%@ include file="menu.jsp" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 <!DOCTYPE html>
 <!-- saved from url=(0022)https://ipcamlive.com/ -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -62,43 +64,34 @@
 <body>
 <div class="container">
 	<div class="content">
+			<form:form modelAttribute="search" method="POST">
 		<div class="search-content">
-			<label class="pull-left">Seach date</label><input type="text" id="date_from">
-			<input type="text" id="date_to">
+			<label class="pull-left">Seach date</label>
+			<form:input id="date_from"  path="from" value="" type="text"  placeholder="From" />
+			<form:input id="date_to" path="to" value="" type="text"  placeholder="To" />
+			<!-- <input type="text" id="date_from">
+			<input type="text" id="date_to"> -->
+			<!--  <label class="pull-right">Camera</label>  -->
+			<form:select path="alias" items="${cameraAlias}" class="pull-left btn-default">					
+			</form:select>	
 			<input type="submit" class="btn btn-default">
 		</div>
+	</form:form>
 		<div class="seach-result">
 			<div class="row">
-				<!-- list img -->
+				
+				<c:forEach items="${videos}" var="video">    
 				<div class="col-sm-3">
-					<div class="list-item list-img">
-						<a class="fancybox-buttons" data-fancybox-group="button">
-							<img src="http://localhost:8080/images/08_11_2016_00_20_19.jpeg" alt=""></a>
-						<span class="icon-img"></span>
+					<div class="list-item list-video">
+						<div class="video">
+								<video width="100%" height="auto" controls="">
+									<source src="${video}" type="video/ogg">
+								</video>
+							</div>
 					</div>
 				</div>
-				<div class="col-sm-3">
-					<div class="list-item list-img">
-						<a class="fancybox-buttons" data-fancybox-group="button">
-							<img src="http://localhost:8080/images/08_08_2016_22_35_34.jpeg" alt=""></a>
-						<span class="icon-img"></span>
-					</div>
-				</div>
-				<div class="col-sm-3">
-					<div class="list-item list-img">
-						<a class="fancybox-buttons" data-fancybox-group="button">
-							<img src="http://localhost:8080/images/08_09_2016_21_31_53.jpeg" alt=""></a>
-						<span class="icon-img"></span>
-				</div>
-				</div>
-				<div class="col-sm-3">
-					<div class="list-item list-img">
-						<a class="fancybox-buttons" data-fancybox-group="button">
-							<img src="http://localhost:8080/images/08_09_2016_22_59_15.jpeg" alt=""></a>
-						<span class="icon-img"></span>
-					</div>
-				</div>
-				<div class="col-sm-3">
+				</c:forEach>
+				<!-- <div class="col-sm-3">
 					<div class="list-item list-video">
 						<div class="video">
 								<video width="100%" height="auto" controls="">
@@ -106,14 +99,18 @@
 								</video>
 							</div>
 					</div>
-				</div>
-				
+				</div> -->
+	</div>
+	</div>
+	
+	</div>
+	</div>			
 <!--popup-->
 <div class="modal fade capture-modal" id="show_list" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-body text-center">
-				<img src="images/img.jpg" alt="">
+			<!-- 	<img src="images/img.jpg" alt=""> -->
 			</div>	
 		</div>
 	</div>
