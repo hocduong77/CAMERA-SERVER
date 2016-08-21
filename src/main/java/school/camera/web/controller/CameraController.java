@@ -36,7 +36,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IImageRepo;
+import school.camera.persistence.dao.ScheduleRepo;
 import school.camera.persistence.dao.UserRepository;
+import school.camera.persistence.model.CamearSchedule;
 import school.camera.persistence.model.Camera;
 import school.camera.persistence.model.Image;
 import school.camera.persistence.model.User;
@@ -53,9 +55,13 @@ public class CameraController {
 
 	@Autowired
 	private IImageRepo imageRepo;
-	
+
 	@Autowired
 	private UserRepository userRepo;
+
+	@Autowired
+	private ScheduleRepo scheduleRepo;
+
 	@Autowired
 	private QuartzConfiguration quart;
 	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -78,10 +84,13 @@ public class CameraController {
 		List<Camera> cameras = cameraRepo.findByUser(user);
 		List<CameraDto> cameraDtos = new ArrayList<CameraDto>();
 		for (Camera camera : cameras) {
-			CameraDto cameraDto = new CameraDto();
-			cameraDto.setStreamUrl(startStream(camera));
-			cameraDto.setCameraId(camera.getCameraid());
-			cameraDtos.add(cameraDto);
+			if (camera.isEnabled()) {
+				CameraDto cameraDto = new CameraDto();
+				cameraDto.setStreamUrl(startStream(camera));
+				cameraDto.setCameraId(camera.getCameraid());
+				cameraDtos.add(cameraDto);
+			}
+
 		}
 		if (isStream == true) {
 			try {
@@ -111,35 +120,6 @@ public class CameraController {
 		return time;
 	}
 
-	private Map<String, String> getHour() {
-		Map<String, String> hour = new LinkedHashMap<String, String>();
-		hour.put("00:00", "00:00");
-		hour.put("01:00", "01:00");
-		hour.put("02:00", "02:00");
-		hour.put("03:00", "03:00");
-		hour.put("04:00", "04:00");
-		hour.put("05:00", "05:00");
-		hour.put("06:00", "06:00");
-		hour.put("07:00", "07:00");
-		hour.put("08:00", "08:00");
-		hour.put("09:00", "09:00");
-		hour.put("10:00", "10:00");
-		hour.put("11:00", "11:00");
-		hour.put("12:00", "12:00");
-		hour.put("13:00", "13:00");
-		hour.put("14:00", "14:00");
-		hour.put("15:00", "15:00");
-		hour.put("16:00", "16:00");
-		hour.put("17:00", "17:00");
-		hour.put("18:00", "18:00");
-		hour.put("19:00", "19:00");
-		hour.put("20:00", "20:00");
-		hour.put("21:00", "21:00");
-		hour.put("22:00", "22:00");
-		hour.put("23:00", "23:00");
-		return hour;
-	}
-
 	@RequestMapping(value = "/setting/{id}", method = RequestMethod.GET)
 	public ModelAndView settingCamera(HttpServletRequest request, Model model, @PathVariable("id") Long cameraId) {
 		Camera camera = cameraRepo.findByCameraid(cameraId);
@@ -147,10 +127,10 @@ public class CameraController {
 		CameraDto cameraDto = convert(camera);
 
 		Map<Integer, String> time = getTimeInterval();
-		Map<String, String> hour = getHour();
+
 		ModelAndView mav = new ModelAndView("setting", "camera", cameraDto);
 		mav.addObject("time", time);
-		mav.addObject("hour", hour);
+		// mav.addObject("hour", hour);
 		return mav;
 
 	}
@@ -158,43 +138,88 @@ public class CameraController {
 	@RequestMapping(value = "/setting/{id}", method = RequestMethod.POST)
 	public ModelAndView updateCamera(HttpServletRequest request, Model model,
 			@ModelAttribute("camera") CameraDto cameraDto, @PathVariable("id") Long cameraId)
-			throws ParseException, SchedulerException {
+			throws SchedulerException {
 		Camera camera = cameraRepo.findByCameraid(cameraId);
+
 		if (camera == null) {
 			return new ModelAndView("setting", "cameras", cameraDto);
 		}
-		// LOGGER.info("setting alias {}", cameraDto.getAlias());
-		// camera.setAlias(cameraDto.getAlias());
-		camera.setCameraUrl(cameraDto.getCameraUrl());
-		camera.setCapture(cameraDto.isCapture());
-		camera.setCaptureTime(cameraDto.getCaptureTime());
-		camera.setEnabled(cameraDto.isEnabled());
-		camera.setName(cameraDto.getName());
-		camera.setRecord(cameraDto.isRecord());
-		camera.setRecordTime(cameraDto.getRecordTime());
-		DateFormat sdf = new SimpleDateFormat("hh:mm");
-		Date date = sdf.parse(cameraDto.getRecordSchedule());
-		camera.setRecordSchedule(date);
-		//camera.setRecordSchedule(new Date());
-		cameraRepo.save(camera);
-
-		if (camera.isCapture() == true && camera.getCaptureTime() > 0) {
-			quart.createCaptureTrigger(camera);
-		} else {
+		if (cameraDto.isEnabled() == false) {
+			camera.setEnabled(false);
+			// delete all schedule
 			quart.deleteJob(camera.getCameraid(), "capture");
-		}
-
-		if (camera.isRecord() == true && camera.getRecordTime() > 0 && camera.getRecordSchedule() != null) {
-			quart.createRecordTrigger(camera);
-		} else {
 			quart.deleteJob(camera.getCameraid(), "record");
+		} else {
+			try {
+
+				DateFormat timeFormat = new SimpleDateFormat("hh:mm");
+				DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+				CamearSchedule schedule = scheduleRepo.findBycamera(camera);
+				if (schedule == null) {
+					schedule = new CamearSchedule();
+				}
+				camera.setCameraUrl(cameraDto.getCameraUrl());
+				camera.setEnabled(cameraDto.isEnabled());
+				camera.setName(cameraDto.getName());
+
+				schedule.setCapture(cameraDto.isCapture());
+				if (cameraDto.isCapture()) {
+					schedule.setCaptureTime(cameraDto.getCaptureTime());
+
+					schedule.setCaptureRepeat(cameraDto.isCaptureRepeat());
+					if (cameraDto.isCaptureRepeat() == false) {
+						schedule.setCaptureFrom(dateFormat.parse(cameraDto.getCaptureFrom()));
+						schedule.setCaptureTo(dateFormat.parse(cameraDto.getCaptureTo()));
+					}
+				}
+
+				schedule.setRecord(cameraDto.isRecord());
+
+				if (cameraDto.isRecord()) {
+					schedule.setRecordTime(cameraDto.getRecordTime());
+
+					schedule.setRecordSchedule(timeFormat.parse(cameraDto.getRecordSchedule()));
+
+					schedule.setRecordRepeat(cameraDto.isRecordRepeat());
+					if (cameraDto.isRecordRepeat() == false) {
+						schedule.setRecordFrom(dateFormat.parse(cameraDto.getCaptureFrom()));
+						schedule.setRecordTo(dateFormat.parse(cameraDto.getRecordTo()));
+					}
+				}
+
+				schedule.setCamera(camera);
+
+				camera.setSchedule(schedule);
+				// camera.setRecordSchedule(new Date());
+				cameraRepo.save(camera);
+
+				if (schedule.isCapture() == true && schedule.getCaptureTime() > 0) {
+					quart.createCaptureTrigger(camera, schedule);
+				} else {
+					quart.deleteJob(camera.getCameraid(), "capture");
+				}
+
+				if (schedule.isRecord() == true && schedule.getRecordTime() > 0 && schedule.getRecordSchedule() != null) {
+					quart.createRecordTrigger(camera, schedule);
+				} else {
+					quart.deleteJob(camera.getCameraid(), "record");
+				}
+			} catch (Exception e) {
+				Map<Integer, String> time = getTimeInterval();
+				String error = "Invalid Input";
+				ModelAndView mav = new ModelAndView("setting", "camera", cameraDto);
+				mav.addObject("time", time);
+				mav.addObject("mess", error);
+				return mav;
+			}
+
 		}
 
 		Map<Integer, String> time = getTimeInterval();
-		Map<String, String> hour = getHour();
+		String success = "save successful";
 		ModelAndView mav = new ModelAndView("setting", "camera", cameraDto);
 		mav.addObject("time", time);
-		mav.addObject("hour", hour);
+		mav.addObject("mess", success);
 
 		return mav;
 	}
@@ -205,7 +230,7 @@ public class CameraController {
 		HttpSession session = request.getSession(false);
 		String email = (String) session.getAttribute("email");
 		User user = userRepo.findByEmail(email);
-		
+
 		LOGGER.info("username {}", email);
 		List<CameraDto> cameras = getListCameras(user);
 		return new ModelAndView("cameras", "cameras", cameras);
@@ -217,9 +242,9 @@ public class CameraController {
 		return "addcamera";
 	}
 
-
 	@RequestMapping(value = "/capture", method = RequestMethod.POST)
-	public @ResponseBody String capture(HttpServletRequest request, Model model) throws IOException, InterruptedException {
+	public @ResponseBody String capture(HttpServletRequest request, Model model)
+			throws IOException, InterruptedException {
 		Long cameraId = Long.parseLong(request.getParameter("cameraId"));
 		LOGGER.info("Rendering test api.{}", cameraId);
 		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
@@ -231,10 +256,10 @@ public class CameraController {
 				+ " --scene-replace --scene-path=C:\\Users\\BinhHoc\\Documents\\GitHub\\CAMERA-SERVER\\src\\main\\webapp\\resources\\images"
 				+ " vlc://quit";
 		LOGGER.info("cmd ==== {}", cmd);
-		Runtime runtime = Runtime.getRuntime();		
+		Runtime runtime = Runtime.getRuntime();
 		Process process = runtime.exec(cmd);
-		process.waitFor();	
-		String result = "http://localhost:8080/images/" + fileName + ".jpeg";	
+		process.waitFor();
+		String result = "http://localhost:8080/images/" + fileName + ".jpeg";
 		Image image = new Image();
 		image.setCamera(camera);
 		image.setDate(new Date());
@@ -242,7 +267,7 @@ public class CameraController {
 		imageRepo.save(image);
 		return result;
 	}
-	
+
 	@RequestMapping(value = "/test", method = RequestMethod.POST)
 	public @ResponseBody String testCamera(HttpServletRequest request, Model model) throws IOException {
 		String url = request.getParameter("url");
@@ -254,7 +279,7 @@ public class CameraController {
 				+ " :network-caching=1000 :sout=#transcode{vcodec=theo,vb=1600,scale=1,acodec=none}:http{mux=ogg,dst=:"
 				+ Integer.toString(port) + "/stream} :no-sout-rtp-sap :no-sout-standard-sap :sout-keep vlc://quit";
 		LOGGER.info("cmd ==== {}", cmd);
-		
+
 		Runtime runtime = Runtime.getRuntime();
 
 		runtime.exec(cmd);
@@ -278,6 +303,7 @@ public class CameraController {
 		LOGGER.info("camera_test_url {}", cameraUrl);
 		String alias = generateAlias();
 		Camera camera = new Camera();
+		camera.setEnabled(true);
 		camera.setAlias(alias);
 		camera.setName(alias);
 		camera.setCameraUrl(cameraUrl);
@@ -303,17 +329,20 @@ public class CameraController {
 		return result;
 	}
 
-	private List<CameraDto> getListCameras(User user ) {
+	private List<CameraDto> getListCameras(User user) {
 		List<Camera> cameras = cameraRepo.findByUser(user);
 		List<CameraDto> cameraDtos = new ArrayList<CameraDto>();
 
 		for (Camera camera : cameras) {
-			CameraDto cameraDto = new CameraDto();
-			cameraDto.setCameraId(camera.getCameraid());
-			cameraDto.setAlias(camera.getAlias());
-			cameraDto.setName(camera.getName());
-			cameraDto.setCameraUrl(camera.getCameraUrl());
-			cameraDtos.add(cameraDto);
+			if (camera.isEnabled()) {
+				CameraDto cameraDto = new CameraDto();
+				cameraDto.setCameraId(camera.getCameraid());
+				cameraDto.setAlias(camera.getAlias());
+				cameraDto.setName(camera.getName());
+				cameraDto.setCameraUrl(camera.getCameraUrl());
+				cameraDtos.add(cameraDto);
+			}
+
 		}
 		return cameraDtos;
 	}
@@ -346,19 +375,44 @@ public class CameraController {
 	}
 
 	private CameraDto convert(Camera camera) {
+		CamearSchedule schedule = scheduleRepo.findBycamera(camera);
 		CameraDto cameraDto = new CameraDto();
+		DateFormat timeFormat = new SimpleDateFormat("hh:mm");
+		DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+		if (null != schedule) {
+			if (schedule.getRecordSchedule() != null) {
+				cameraDto.setRecordSchedule(timeFormat.format(schedule.getRecordSchedule()));
+			}
+			if (schedule.getCaptureFrom() != null) {
+				cameraDto.setCaptureFrom(dateFormat.format(schedule.getCaptureFrom()));
+			}
+
+			if (schedule.getCaptureTo() != null) {
+				cameraDto.setCaptureTo(dateFormat.format(schedule.getCaptureTo()));
+			}
+
+			if (schedule.getRecordFrom() != null) {
+				cameraDto.setRecordFrom(dateFormat.format(schedule.getRecordFrom()));
+			}
+			if (schedule.getRecordTo() != null) {
+				cameraDto.setRecordTo(dateFormat.format(schedule.getRecordTo()));
+			}
+
+			cameraDto.setCapture(schedule.isCapture());
+			cameraDto.setCaptureTime(schedule.getCaptureTime());
+			cameraDto.setRecordTime(schedule.getRecordTime());
+			cameraDto.setRecord(schedule.isRecord());
+			cameraDto.setCaptureRepeat(schedule.isCaptureRepeat());
+			cameraDto.setRecordRepeat(schedule.isRecordRepeat());
+		}
+
 		cameraDto.setAlias(camera.getAlias());
 		cameraDto.setCameraId(camera.getCameraid());
 		cameraDto.setCameraUrl(camera.getCameraUrl());
-		cameraDto.setCapture(camera.isCapture());
-		cameraDto.setCaptureTime(camera.getCaptureTime());
+
 		cameraDto.setEnabled(camera.isEnabled());
 		cameraDto.setName(camera.getName());
-		cameraDto.setRecord(camera.isRecord());
-		if (camera.getRecordSchedule() != null) {
-			cameraDto.setRecordSchedule(camera.getRecordSchedule().toString());
-		}
-		cameraDto.setRecordTime(camera.getRecordTime());
+
 		return cameraDto;
 	}
 

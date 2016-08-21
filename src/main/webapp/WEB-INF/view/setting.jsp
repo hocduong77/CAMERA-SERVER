@@ -6,6 +6,12 @@
 <%@ taglib prefix="sec"
 	uri="http://www.springframework.org/security/tags"%>
 
+<script
+	src="<c:url value="/resources/dashboard/jquery.datetimepicker.js"/>"></script>
+<link
+	href="<c:url value="/resources/dashboard/jquery.datetimepicker.css"/>"
+	rel="stylesheet">
+
 <div class="container">
 
 	<div id="contentdiv" class="content">
@@ -261,6 +267,9 @@
 							<label id="enabledtextdiv"> <form:checkbox path="enabled" />
 								Camera enabled
 							</label>
+							<label id="enabledtextdiv"> <form:label  class="alert alert-error" path="enabled" />
+								${mess}
+							</label>
 						</div>
 					</div>
 				</div>
@@ -296,16 +305,35 @@
 					style="display: block;">
 					<div class="col-sm-offset-2 col-sm-4">
 						<div class="checkbox">
-							<label id="operationtimewindowenabledtextdiv"> <form:checkbox
-									path="capture" /> Capture Schedule
+							<label id="capture_enable"> <form:checkbox path="capture" />
+								Capture
 							</label>
 						</div>
 					</div>
 					<div class="col-sm-4">
 						<div class="checkbox">
 							<label id="operationtimewindowenabledtextdiv"
-								style="margin-left: 50px;"> <form:checkbox path="record" />
-								Record Schedule
+								style="margin-left: 50px;"> <form:checkbox  path="record" />
+								Record
+							</label>
+						</div>
+					</div>
+				</div>
+				
+				<div id="operationtimewindowenableddivv" class="form-group"
+					style="display: block;">
+					<div class="col-sm-offset-2 col-sm-4">
+						<div class="checkbox">
+							<label id="capture"> <form:checkbox onclick="capRepeat(this)" path="captureRepeat" />
+								Repeat Every Day
+							</label>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="checkbox">
+							<label id="operationtimewindowenabledtextdiv"
+								style="margin-left: 50px;"> <form:checkbox onclick="recRepeat(this)" path="recordRepeat" />
+								Repeat Every Day
 							</label>
 						</div>
 					</div>
@@ -315,32 +343,61 @@
 					<label id="operationtimewindowfromtextdiv"
 						class="col-sm-2 control-label">Interval:&nbsp;</label>
 					<div class="col-sm-4">
-						<form:select path="captureTime" items="${time}" class="form-control">					
-						</form:select>			
+						<form:select path="captureTime" items="${time}"
+							class="form-control">
+						</form:select>
 					</div>
 					<label id="operationtimewindowfromtextdiv"
 						class="control-label text-left right-content">Time:&nbsp;</label>
 					<div class="col-sm-4">
-					<form:select path="recordSchedule" items="${hour}" class="form-control">					
-							</form:select>	
-							<%-- <form:input path="recordSchedule" value="" type="text" class="class="form-control timepicker" /> --%>
-						<!--  <input type="text" name="operationtimewindowfromedit"
-							id="operationtimewindowfromedit"
-							class="form-control timepicker valid"> -->
+					<form:input path="recordSchedule" value="" type="text" class="form-control" />
+			
+					</div>
+				</div>
+				<div id="operationtimewindowtodiv" class="form-group"
+					style="display: block;">
+					<label id="capture_from"
+						class="col-sm-2 control-label">From:&nbsp;</label>
+					<div  class="col-sm-4 ">
+						 <form:input path="captureFrom" id="capture_from_input" class="form-control" value=""
+							type="text" placeholder="From" />
+					</div>
+					<label id="operationtimewindowtotextdiv"
+						class="control-label right-content">Length:&nbsp;</label>
+					<div class="col-sm-4 ">
+						<form:select path="recordTime" items="${time}"
+							class="form-control">
+						</form:select>
 					</div>
 				</div>
 				<div id="operationtimewindowtodiv" class="form-group"
 					style="display: block;">
 					<label id="operationtimewindowtotextdiv"
-						class="col-sm-2 control-label">&nbsp;</label>
-					<div class="col-sm-4">
-						<!-- <input type="text" name="operationtimewindowtodit" id="operationtimewindowtoedit" class="form-control timepicker valid"> -->
+						class="col-sm-2 control-label">To&nbsp;</label>
+					<div class="col-sm-4 ">
+						<form:input path="captureTo" id="capture_to_input" class="form-control" value="" type="text"
+							placeholder="To" />
 					</div>
 					<label id="operationtimewindowtotextdiv"
-						class="control-label right-content">Length:&nbsp;</label>
-					<div class="col-sm-4">
-						<form:select path="recordTime" items="${time}" class="form-control">					
-							</form:select>		
+						class="control-label right-content">From:&nbsp;</label>
+					<div class="col-sm-4 ">
+						<form:input path="recordFrom"  id="record_from_input" class="form-control" value="" type="text"
+							placeholder="From" />
+					</div>
+				</div>
+
+				<div id="operationtimewindowtodiv" class="form-group"
+					style="display: block;">
+					<label id="operationtimewindowtotextdiv"
+						class="col-sm-2 control-label">&nbsp;</label>
+					<div class="col-sm-4 ">
+						<!-- <input id="date_to"   class="form-control" value="" type="text"  placeholder="To" /> -->
+					</div>
+					<label id="operationtimewindowtotextdiv"
+						class="control-label right-content">to:&nbsp;</label>
+					<div class="col-sm-4 ">
+						<form:input path="recordTo" id="record_to_input" class="form-control" value=""
+							type="text" placeholder="From" />
 					</div>
 				</div>
 
@@ -348,8 +405,6 @@
 					<div class="col-sm-offset-2 col-sm-4">
 						<input type="submit" value="Update"
 							class="btn btn-primary pull-left" />
-						<!-- <button id="okbutton" class="btn btn-large btn-default" data-loading-text="Loading..." type="submit">Update</button> -->
-						<!-- <input onclick="myFunction()" type="submit" value="Update" id="submitbutton" class="btn btn-primary pull-left"> -->
 						<div id="formprocessdiv" class="loading pull-left"
 							style="display: none;"></div>
 					</div>
@@ -366,5 +421,34 @@
 				console.log($('#timeshiftdeltaselect').val());
 			}
 		</script>
+		<script>
+		function capRepeat(chkbox) { 
+		    var visSetting = (chkbox.checked) ? "visible" : "hidden"; 
+		    if(chkbox.checked){
+		    	console.log("checked");
+		    	document.getElementById("capture_from_input").readOnly = true;
+		    	document.getElementById("capture_to_input").readOnly = true;
+		    }else{
+		    	console.log("not checked");
+		    	document.getElementById("capture_from_input").readOnly = false;
+		    	document.getElementById("capture_to_input").readOnly = false;
+		    }
+		} 
+		
+		 function recRepeat(chkbox) { 
+		    var visSetting = (chkbox.checked) ? "visible" : "hidden"; 
+		    if(chkbox.checked){
+		    	console.log("checked");
+		    	document.getElementById("record_from_input").readOnly = true;
+		    	document.getElementById("record_to_input").readOnly = true;
+		    }else{
+		    	console.log("not checked");
+		    	document.getElementById("record_from_input").readOnly = false;
+		    	document.getElementById("record_to_input").readOnly = false;
+		    }
+		}  
+		
+		</script>
+
 		</body>
 		</html>

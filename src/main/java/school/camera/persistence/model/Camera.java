@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -13,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 @Entity
 public class Camera {
@@ -31,15 +33,7 @@ public class Camera {
 	
 	private boolean enabled;
 	
-	private boolean capture;
-	
-	private boolean record;
-	
-	private int captureTime;
-	
-	private int recordTime;
-	
-	private Date recordSchedule;
+
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "userid", nullable = false)
@@ -47,7 +41,39 @@ public class Camera {
 	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "camera")
 	private Set<Image> image = new HashSet<Image>(0);
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "camera")
+	private Set<Video> video = new HashSet<Video>(0);
 
+	@OneToOne(mappedBy = "camera", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	private CamearSchedule schedule;
+	
+	
+	
+
+	public Set<Image> getImage() {
+		return image;
+	}
+
+	public void setImage(Set<Image> image) {
+		this.image = image;
+	}
+
+	public Set<Video> getVideo() {
+		return video;
+	}
+
+	public void setVideo(Set<Video> video) {
+		this.video = video;
+	}
+
+	public CamearSchedule getSchedule() {
+		return schedule;
+	}
+
+	public void setSchedule(CamearSchedule schedule) {
+		this.schedule = schedule;
+	}
 
 	public String getStreamUrl() {
 		return streamUrl;
@@ -105,45 +131,7 @@ public class Camera {
 		this.enabled = enabled;
 	}
 
-	public boolean isCapture() {
-		return capture;
-	}
-
-	public void setCapture(boolean capture) {
-		this.capture = capture;
-	}
-
-	public boolean isRecord() {
-		return record;
-	}
-
-	public void setRecord(boolean record) {
-		this.record = record;
-	}
-
-	public int getCaptureTime() {
-		return captureTime;
-	}
-
-	public void setCaptureTime(int captureTime) {
-		this.captureTime = captureTime;
-	}
-
-	public int getRecordTime() {
-		return recordTime;
-	}
-
-	public void setRecordTime(int recordTime) {
-		this.recordTime = recordTime;
-	}
-
-	public Date getRecordSchedule() {
-		return recordSchedule;
-	}
-
-	public void setRecordSchedule(Date recordSchedule) {
-		this.recordSchedule = recordSchedule;
-	}
+	
 
 
 }

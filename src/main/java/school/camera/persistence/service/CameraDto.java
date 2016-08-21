@@ -20,13 +20,74 @@ public class CameraDto {
 	
 	private boolean record;
 	
+	private boolean captureRepeat;
+	
+	private boolean recordRepeat;
+	
 	private int captureTime;
 	
 	private int recordTime;
 	
 	private String recordSchedule;
+	
+	private String captureFrom;
+	
+	private String captureTo;
+	
+	private String recordFrom;
+	
+	private String recordTo;
 
 	
+	
+	public boolean isCaptureRepeat() {
+		return captureRepeat;
+	}
+
+	public void setCaptureRepeat(boolean captureRepeat) {
+		this.captureRepeat = captureRepeat;
+	}
+
+	public boolean isRecordRepeat() {
+		return recordRepeat;
+	}
+
+	public void setRecordRepeat(boolean recordRepeat) {
+		this.recordRepeat = recordRepeat;
+	}
+
+	public String getCaptureFrom() {
+		return captureFrom;
+	}
+
+	public void setCaptureFrom(String captureFrom) {
+		this.captureFrom = captureFrom;
+	}
+
+	public String getCaptureTo() {
+		return captureTo;
+	}
+
+	public void setCaptureTo(String captureTo) {
+		this.captureTo = captureTo;
+	}
+
+	public String getRecordFrom() {
+		return recordFrom;
+	}
+
+	public void setRecordFrom(String recordFrom) {
+		this.recordFrom = recordFrom;
+	}
+
+	public String getRecordTo() {
+		return recordTo;
+	}
+
+	public void setRecordTo(String recordTo) {
+		this.recordTo = recordTo;
+	}
+
 	public boolean isCapture() {
 		return capture;
 	}

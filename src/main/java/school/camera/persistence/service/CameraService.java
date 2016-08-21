@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IImageRepo;
 import school.camera.persistence.dao.IVideoRepo;
+import school.camera.persistence.dao.ScheduleRepo;
 import school.camera.persistence.dao.UserRepository;
+import school.camera.persistence.model.CamearSchedule;
 import school.camera.persistence.model.Camera;
 import school.camera.persistence.model.Image;
 import school.camera.persistence.model.Video;
@@ -29,6 +31,9 @@ public class CameraService implements ICameraService {
 	@Autowired
 	private CameraRepo cameraRepo;
 
+	@Autowired
+	private ScheduleRepo scheduleRepo;
+	
 	@Autowired
 	private IImageRepo imageRepo;
 	
@@ -65,9 +70,11 @@ public class CameraService implements ICameraService {
 		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
 		String fileName = df.format(new Date()) + ".ogg";
 		Camera camera = cameraRepo.findByCameraid(cameraId);
+		
+		CamearSchedule schedule = scheduleRepo.findBycamera(camera);
 		String cmd = "vlc " + camera.getCameraUrl()
 				+ "  --sout=#transcode{vcodec=theo}:std{access=file,mux=ogg,dst=C:\\Users\\BinhHoc\\Documents\\GitHub\\CAMERA-SERVER\\src\\main\\webapp\\resources\\videos\\"
-				+ fileName + " --stop-time=" + camera.getRecordTime() + " vlc://quit";
+				+ fileName + " --stop-time=" + schedule.getRecordTime() + " vlc://quit";
 		LOGGER.info("cmd ==== {}", cmd);
 		Runtime runtime = Runtime.getRuntime();
 		Process process = runtime.exec(cmd);

@@ -67,11 +67,14 @@ public class MediaController {
 		List<String> imageUrls = new ArrayList<String>();
 		List<String> cameraAlias = new ArrayList<String>();
 		for (Camera camera : cameras) {
-			cameraAlias.add(camera.getAlias());
-			List<Image> images = imageRepo.findByCamera(camera);
-			for (Image image : images) {
-				imageUrls.add(image.getImageUrl());
+			if (camera.isEnabled()) {
+				cameraAlias.add(camera.getAlias());
+				List<Image> images = imageRepo.findByCamera(camera);
+				for (Image image : images) {
+					imageUrls.add(image.getImageUrl());
+				}
 			}
+			
 		}
 		SearchDto search = new SearchDto();
 		ModelAndView mav = new ModelAndView("image", "search", search);
@@ -139,21 +142,74 @@ public class MediaController {
 		List<String> videoUrls = new ArrayList<String>();
 		List<String> cameraAlias = new ArrayList<String>();
 		for (Camera camera : cameras) {
-			LOGGER.info("camera alias {}", camera.getAlias());
-			cameraAlias.add(camera.getAlias());
-			List<Video> videos = videoRepo.findByCamera(camera);
-			for (Video video : videos) {
-				LOGGER.info("videoUrls {}", video.getVideoUrl());
-				videoUrls.add(video.getVideoUrl());
+			if (camera.isEnabled()) {
+				LOGGER.info("camera alias {}", camera.getAlias());
+				cameraAlias.add(camera.getAlias());
+				List<Video> videos = videoRepo.findByCamera(camera);
+				for (Video video : videos) {
+					LOGGER.info("videoUrls {}", video.getVideoUrl());
+					videoUrls.add(video.getVideoUrl());
+				}
 			}
+			
 		}
 		SearchDto search = new SearchDto();
 		ModelAndView mav = new ModelAndView("video", "search", search);
 		mav.addObject("cameraAlias", cameraAlias);
 		mav.addObject("videos", videoUrls);
 		return mav;
-	
-
-		//return new ModelAndView("video");
 	}
+	
+	@RequestMapping(value = "/video", method = RequestMethod.POST)
+	public ModelAndView searchvideos(HttpServletRequest request, Model model,  @ModelAttribute("search") SearchDto searchDto) throws IOException {	
+		
+		DateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+		Date from = null;
+		Date to = null;
+		try {
+			 from = sdf.parse(searchDto.getFrom());
+			 to = sdf.parse(searchDto.getTo());
+		} catch (Exception e) {
+			LOGGER.info("to or to null {}");
+		}
+		LOGGER.info("from {}", from);
+		LOGGER.info("to {}", to);
+		HttpSession session = request.getSession(false);
+		String email = (String) session.getAttribute("email");
+		LOGGER.info("username {}", email);
+		User user = userRepo.findByEmail(email);
+		List<Camera> cameraSearch = cameraRepo.findByUser(user);
+		List<String> cameraAlias = new ArrayList<String>();
+		for (Camera camera : cameraSearch) {
+			if (camera.isEnabled()) {
+				cameraAlias.add(camera.getAlias());
+			}
+			
+		}
+		List<Camera> cameras = cameraRepo.findByUserAndAlias(user, searchDto.getAlias());
+		List<String> videoUrls = new ArrayList<String>();
+		
+		for (Camera camera : cameras) {
+			if (camera.isEnabled()) {
+				List<Video> videos = new ArrayList<Video>();
+				if (from == null || to == null) {
+					 videos = videoRepo.findByCamera(camera);
+				}else {
+					 videos = videoRepo.findByCameraAndDateBetween(camera, from, to);
+				}
+				
+				for (Video video : videos) {
+					videoUrls.add(video.getVideoUrl());
+				}
+			}
+			
+		}
+		SearchDto search = new SearchDto();
+		ModelAndView mav = new ModelAndView("video", "search", search);
+		mav.addObject("cameraAlias", cameraAlias);
+		mav.addObject("videos", videoUrls);
+		return mav;
+	}
+
+	
 }
