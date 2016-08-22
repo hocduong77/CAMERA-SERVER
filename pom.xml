@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>school.camera</groupId>
-	<artifactId>spring-security-login-and-registration</artifactId>
-	<name>spring-security-login-and-registration</name>
+	<artifactId>camera-server</artifactId>
+	<name>camera-server</name>
 	<packaging>war</packaging>
 	<version>1.0.0-BUILD-SNAPSHOT</version>
 
@@ -157,7 +157,7 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>spring-security-login-and-registration</finalName>
+		<finalName>camera-server</finalName>
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
