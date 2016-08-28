@@ -72,7 +72,7 @@
 			<!-- <input type="text" id="date_from">
 			<input type="text" id="date_to"> -->
 			<!--  <label class="pull-right">Camera</label>  -->
-			<form:select path="alias" items="${cameraAlias}" class="pull-left btn-default">					
+			<form:select path="alias" items="${cameraAlias}" class="pull-left btn-default select">					
 			</form:select>	
 			<input type="submit" class="btn btn-default">
 		</div>

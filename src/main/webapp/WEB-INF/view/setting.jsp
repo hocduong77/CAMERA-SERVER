@@ -305,7 +305,7 @@
 					style="display: block;">
 					<div class="col-sm-offset-2 col-sm-4">
 						<div class="checkbox">
-							<label id="capture_enable"> <form:checkbox path="capture" />
+							<label id="capture"> <form:checkbox onclick="captureEnable(this)" id="capture_enable" path="capture" />
 								Capture
 							</label>
 						</div>
@@ -313,7 +313,7 @@
 					<div class="col-sm-4">
 						<div class="checkbox">
 							<label id="operationtimewindowenabledtextdiv"
-								style="margin-left: 50px;"> <form:checkbox  path="record" />
+								style="margin-left: 50px;"> <form:checkbox onclick="recordEnable(this)" id="record_enable"  path="record" />
 								Record
 							</label>
 						</div>
@@ -324,7 +324,7 @@
 					style="display: block;">
 					<div class="col-sm-offset-2 col-sm-4">
 						<div class="checkbox">
-							<label id="capture"> <form:checkbox onclick="capRepeat(this)" path="captureRepeat" />
+							<label id="capture"> <form:checkbox id="captureRepeat" onclick="capRepeat(this)" path="captureRepeat" />
 								Repeat Every Day
 							</label>
 						</div>
@@ -332,7 +332,7 @@
 					<div class="col-sm-4">
 						<div class="checkbox">
 							<label id="operationtimewindowenabledtextdiv"
-								style="margin-left: 50px;"> <form:checkbox onclick="recRepeat(this)" path="recordRepeat" />
+								style="margin-left: 50px;"> <form:checkbox id="recordRepeat"  onclick="recRepeat(this)" path="recordRepeat" />
 								Repeat Every Day
 							</label>
 						</div>
@@ -343,7 +343,7 @@
 					<label id="operationtimewindowfromtextdiv"
 						class="col-sm-2 control-label">Interval:&nbsp;</label>
 					<div class="col-sm-4">
-						<form:select path="captureTime" items="${time}"
+						<form:select if="captureTime" path="captureTime" items="${time}"
 							class="form-control">
 						</form:select>
 					</div>
@@ -413,15 +413,95 @@
 			</form:form>
 
 		</div>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 		<script>
-			function myFunction() {
-
-				console.log($('#operationtimewindowfromedit').val());
-				console.log($('#operationtimewindowtoedit').val());
-				console.log($('#timeshiftdeltaselect').val());
-			}
+			$(document).ready(function() {
+				console.log("on loaddd");
+				if ($('#capture_enable').is(':checked')) {
+					console.log("on checked");
+				}else{
+					console.log("not checked");  
+					$('#captureTime').prop('disabled', true);
+					$('#captureRepeat').prop('disabled', true);
+					document.getElementById("capture_from_input").readOnly = true;
+			    	document.getElementById("capture_to_input").readOnly = true;
+				}
+				
+				if ($('#record_enable').is(':checked')) {
+					console.log("on checked");
+				}else{
+					console.log("not checked");  
+					$('#recordTime').prop('disabled', true);
+					$('#recordRepeat').prop('disabled', true);  
+					document.getElementById("recordSchedule").readOnly = true;
+					document.getElementById("record_from_input").readOnly = true;
+			    	document.getElementById("record_to_input").readOnly = true;
+				}
+				
+				if ($('#recordRepeat').is(':checked')) {
+					document.getElementById("record_from_input").readOnly = true;
+			    	document.getElementById("record_to_input").readOnly = true;
+				}
+				if ($('#captureRepeat').is(':checked')) {
+					document.getElementById("capture_from_input").readOnly = true;
+			    	document.getElementById("capture_to_input").readOnly = true;
+				}
+				
+				});
+			
 		</script>
-		<script>
+		<script> 
+		//capture_enable
+		//recordEnable
+		function recordEnable(chkbox) { 
+		    var visSetting = (chkbox.checked) ? "visible" : "hidden"; 
+		    if(!chkbox.checked){
+		    	
+		    	console.log("not checked");  
+				$('#recordTime').prop('disabled', true);
+				$('#recordRepeat').prop('disabled', true);  
+				document.getElementById("recordSchedule").readOnly = true;
+				document.getElementById("record_from_input").readOnly = true;
+		    	document.getElementById("record_to_input").readOnly = true;
+		    }else{
+		    	console.log("not checked"); 
+		    	if ($('#recordRepeat').is(':checked')) {
+					document.getElementById("record_from_input").readOnly = true;
+			    	document.getElementById("record_to_input").readOnly = true;
+				}else{
+					document.getElementById("record_from_input").readOnly = false;
+			    	document.getElementById("record_to_input").readOnly = false;
+				}
+		    	
+				$('#recordTime').prop('disabled', false);
+				$('#recordRepeat').prop('disabled', false);  
+				document.getElementById("recordSchedule").readOnly = false;
+			
+		    }
+		} 
+		
+			function captureEnable(chkbox) { 
+		    var visSetting = (chkbox.checked) ? "visible" : "hidden"; 
+		    if(!chkbox.checked){
+		    	console.log("not checked");  
+				$('#captureTime').prop('disabled', true);
+				$('#captureRepeat').prop('disabled', true);
+				document.getElementById("capture_from_input").readOnly = true;
+		    	document.getElementById("capture_to_input").readOnly = true;
+		    }else{
+		    	console.log("not checked");  
+		    	if ($('#captureRepeat').is(':checked')) {
+					document.getElementById("capture_from_input").readOnly = true;
+			    	document.getElementById("capture_to_input").readOnly = true;
+				}else{
+					document.getElementById("capture_from_input").readOnly = false;
+			    	document.getElementById("capture_to_input").readOnly = false;
+				}
+				$('#captureTime').prop('disabled', false);
+				$('#captureRepeat').prop('disabled', false);
+				
+		    }
+		} 
 		function capRepeat(chkbox) { 
 		    var visSetting = (chkbox.checked) ? "visible" : "hidden"; 
 		    if(chkbox.checked){

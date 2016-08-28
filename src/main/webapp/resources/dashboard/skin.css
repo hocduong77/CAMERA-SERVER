@@ -522,6 +522,9 @@ img {
 	margin-bottom: 10px;
 	cursor: pointer;
 	overflow: hidden;}
+	.list-item .video {
+	display: block !important;
+	}
 .list-item img {
 	max-width: 100%;}
 .list-img .icon-img {
@@ -545,6 +548,11 @@ img {
 	margin-top: -16px;
 	margin-left: -16px;
 	pointer-events: none;
+}
+.select {
+	height: 34px;
+    margin-left: 10px;
+    border-radius: 4px;
 }
 .list-video .video-controls {
 	display: none;}
