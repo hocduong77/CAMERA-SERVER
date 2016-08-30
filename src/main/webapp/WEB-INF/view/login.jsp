@@ -48,7 +48,6 @@
 			<button id="okbutton" class="btn btn-large btn-default" data-loading-text="Loading..." type="submit">Login</button>
 			<div class="register pull-right">
 				<a href="<c:url value="/user/registration" />">Sign up</a><br>
-				<a href="<c:url value="/user/forgotten" />">Forgotten password</a>
 			</div>
 		</form>
 

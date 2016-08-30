@@ -282,13 +282,14 @@ public class CameraController {
 
 		Runtime runtime = Runtime.getRuntime();
 
-		runtime.exec(cmd);
+		Process process = runtime.exec(cmd);
 		try {
 			Thread.sleep(15000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		session.setAttribute("test_camera", process);
 		LOGGER.info("return stream url");
 		String result = "<video id=\"video\" src=\"http://localhost:" + Integer.toString(port)
 				+ "/stream\" type=\"video/ogg; codecs=theora\" autoplay=\"autoplay\"/>";
@@ -300,6 +301,7 @@ public class CameraController {
 	public ModelAndView saveCamera(HttpServletRequest request, Model model) {
 		HttpSession session = request.getSession(false);
 		String cameraUrl = (String) session.getAttribute("camera_test_url");
+		Process process = (Process) session.getAttribute("test_camera");
 		LOGGER.info("camera_test_url {}", cameraUrl);
 		String alias = generateAlias();
 		Camera camera = new Camera();
@@ -313,7 +315,7 @@ public class CameraController {
 		camera.setUser(user);
 		cameraRepo.save(camera);
 		List<CameraDto> cameras = getListCameras(user);
-
+		process.destroy();
 		return new ModelAndView("cameras", "cameras", cameras);
 	}
 
