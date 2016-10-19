@@ -29,7 +29,9 @@ import school.camera.persistence.model.Image;
 import school.camera.persistence.model.User;
 import school.camera.persistence.model.Video;
 import school.camera.persistence.service.CameraDto;
+import school.camera.persistence.service.OpenCv;
 import school.camera.persistence.service.SearchDto;
+import school.camera.persistence.service.Server2;
 import school.camera.spring.QuartzConfiguration;
 
 @Controller
@@ -40,25 +42,40 @@ public class MediaController {
 
 	@Autowired
 	private UserRepository userRepo;
-	
 
 	@Autowired
 	private IVideoRepo videoRepo;
 
 	@Autowired
 	private IImageRepo imageRepo;
-	
+
 	@Autowired
 	private QuartzConfiguration quart;
 	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
-	
+
 	public MediaController() {
 
 	}
-	
+
+	@RequestMapping(value = "/opencv", method = RequestMethod.GET)
+	public ModelAndView opencv(HttpServletRequest request, Model model) throws Exception {
+		System.out.println(" ======================== " + System.getProperty("java.library.path"));
+		// OpenCv opencv = new OpenCv("opencv");
+		// opencv.start();
+		Server2 server1 = new Server2();
+		server1.setRTP_dest_port(6699);
+		server1.start();
+
+		Server2 server2 = new Server2();
+		server2.setRTP_dest_port(8207);
+		server2.start();
+		ModelAndView mav = new ModelAndView("opencv");
+		return mav;
+	}
+
 	@RequestMapping(value = "/image", method = RequestMethod.GET)
 	public ModelAndView images(HttpServletRequest request, Model model) throws IOException {
-		
+
 		HttpSession session = request.getSession(false);
 		String email = (String) session.getAttribute("email");
 		LOGGER.info("username {}", email);
@@ -74,25 +91,26 @@ public class MediaController {
 					imageUrls.add(image.getImageUrl());
 				}
 			}
-			
+
 		}
 		SearchDto search = new SearchDto();
 		ModelAndView mav = new ModelAndView("image", "search", search);
 		mav.addObject("cameraAlias", cameraAlias);
 		mav.addObject("images", imageUrls);
 		return mav;
-		//return new ModelAndView("image", "images", imageUrls );
+		// return new ModelAndView("image", "images", imageUrls );
 	}
 
 	@RequestMapping(value = "/image", method = RequestMethod.POST)
-	public ModelAndView searchimages(HttpServletRequest request, Model model,  @ModelAttribute("search") SearchDto searchDto) throws IOException {	
-		
+	public ModelAndView searchimages(HttpServletRequest request, Model model,
+			@ModelAttribute("search") SearchDto searchDto) throws IOException {
+
 		DateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 		Date from = null;
 		Date to = null;
 		try {
-			 from = sdf.parse(searchDto.getFrom());
-			 to = sdf.parse(searchDto.getTo());
+			from = sdf.parse(searchDto.getFrom());
+			to = sdf.parse(searchDto.getTo());
 		} catch (Exception e) {
 			LOGGER.info("to or to null {}");
 		}
@@ -109,15 +127,15 @@ public class MediaController {
 		}
 		List<Camera> cameras = cameraRepo.findByUserAndAlias(user, searchDto.getAlias());
 		List<String> imageUrls = new ArrayList<String>();
-		
+
 		for (Camera camera : cameras) {
 			List<Image> images = new ArrayList<Image>();
 			if (from == null || to == null) {
-				 images = imageRepo.findByCamera(camera);
-			}else {
-				 images = imageRepo.findByCameraAndDateBetween(camera, from, to);
+				images = imageRepo.findByCamera(camera);
+			} else {
+				images = imageRepo.findByCameraAndDateBetween(camera, from, to);
 			}
-			
+
 			for (Image image : images) {
 				imageUrls.add(image.getImageUrl());
 			}
@@ -127,13 +145,12 @@ public class MediaController {
 		mav.addObject("cameraAlias", cameraAlias);
 		mav.addObject("images", imageUrls);
 		return mav;
-		//return new ModelAndView("image", "images", imageUrls );
+		// return new ModelAndView("image", "images", imageUrls );
 	}
 
-	
 	@RequestMapping(value = "/video", method = RequestMethod.GET)
 	public ModelAndView videos(HttpServletRequest request, Model model) throws IOException {
-		
+
 		HttpSession session = request.getSession(false);
 		String email = (String) session.getAttribute("email");
 		LOGGER.info("username {}", email);
@@ -151,7 +168,7 @@ public class MediaController {
 					videoUrls.add(video.getVideoUrl());
 				}
 			}
-			
+
 		}
 		SearchDto search = new SearchDto();
 		ModelAndView mav = new ModelAndView("video", "search", search);
@@ -159,16 +176,17 @@ public class MediaController {
 		mav.addObject("videos", videoUrls);
 		return mav;
 	}
-	
+
 	@RequestMapping(value = "/video", method = RequestMethod.POST)
-	public ModelAndView searchvideos(HttpServletRequest request, Model model,  @ModelAttribute("search") SearchDto searchDto) throws IOException {	
-		
+	public ModelAndView searchvideos(HttpServletRequest request, Model model,
+			@ModelAttribute("search") SearchDto searchDto) throws IOException {
+
 		DateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 		Date from = null;
 		Date to = null;
 		try {
-			 from = sdf.parse(searchDto.getFrom());
-			 to = sdf.parse(searchDto.getTo());
+			from = sdf.parse(searchDto.getFrom());
+			to = sdf.parse(searchDto.getTo());
 		} catch (Exception e) {
 			LOGGER.info("to or to null {}");
 		}
@@ -184,25 +202,25 @@ public class MediaController {
 			if (camera.isEnabled()) {
 				cameraAlias.add(camera.getAlias());
 			}
-			
+
 		}
 		List<Camera> cameras = cameraRepo.findByUserAndAlias(user, searchDto.getAlias());
 		List<String> videoUrls = new ArrayList<String>();
-		
+
 		for (Camera camera : cameras) {
 			if (camera.isEnabled()) {
 				List<Video> videos = new ArrayList<Video>();
 				if (from == null || to == null) {
-					 videos = videoRepo.findByCamera(camera);
-				}else {
-					 videos = videoRepo.findByCameraAndDateBetween(camera, from, to);
+					videos = videoRepo.findByCamera(camera);
+				} else {
+					videos = videoRepo.findByCameraAndDateBetween(camera, from, to);
 				}
-				
+
 				for (Video video : videos) {
 					videoUrls.add(video.getVideoUrl());
 				}
 			}
-			
+
 		}
 		SearchDto search = new SearchDto();
 		ModelAndView mav = new ModelAndView("video", "search", search);
@@ -211,5 +229,4 @@ public class MediaController {
 		return mav;
 	}
 
-	
 }

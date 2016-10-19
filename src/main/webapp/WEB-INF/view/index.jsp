@@ -99,8 +99,12 @@
 
 	<div class="home-content">
 
-		<h3>Main features:</h3>
 
+		<h3>Main features:</h3>
+<applet code="school.camera.validation.service.HelloWorldApplet.class" width="320" height="120">
+If your browser was Java-enabled, a "Hello, World"
+message would appear here.
+</applet>
 		<div class="row">
 
 			<div class="col-xs-12 col-xsp-6 col-sm-6 col-md-4 col-lg-4">

@@ -57,6 +57,8 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
         registry.addViewController("/index.html");
         registry.addViewController("/image.html");
         registry.addViewController("/video.html");
+        registry.addViewController("/opencv.html");
+        
     }
 
     @Bean

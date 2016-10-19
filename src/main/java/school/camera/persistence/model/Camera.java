@@ -33,7 +33,7 @@ public class Camera {
 	
 	private boolean enabled;
 	
-
+	private int port;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "userid", nullable = false)
@@ -48,8 +48,13 @@ public class Camera {
 	@OneToOne(mappedBy = "camera", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private CamearSchedule schedule;
 	
-	
-	
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
 
 	public Set<Image> getImage() {
 		return image;
