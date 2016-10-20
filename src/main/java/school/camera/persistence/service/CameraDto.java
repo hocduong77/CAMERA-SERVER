@@ -3,43 +3,51 @@ package school.camera.persistence.service;
 import java.util.Date;
 
 public class CameraDto {
-	
+
 	private Long cameraId;
-	
+
 	private String cameraUrl;
 
 	private String alias;
-	
+
 	private String name;
-	
+
 	private String streamUrl;
-	
+
 	private boolean enabled;
-	
+
 	private boolean capture;
-	
+
 	private boolean record;
-	
+
 	private boolean captureRepeat;
-	
+
 	private boolean recordRepeat;
-	
+
 	private int captureTime;
-	
+
 	private int recordTime;
-	
+
 	private String recordSchedule;
-	
+
 	private String captureFrom;
-	
+
 	private String captureTo;
-	
+
 	private String recordFrom;
-	
+
 	private String recordTo;
 
-	
-	
+	private int port;
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
 	public boolean isCaptureRepeat() {
 		return captureRepeat;
 	}
@@ -120,9 +128,6 @@ public class CameraDto {
 		this.recordTime = recordTime;
 	}
 
-
-
-
 	public String getRecordSchedule() {
 		return recordSchedule;
 	}
@@ -146,7 +151,6 @@ public class CameraDto {
 	public void setStreamUrl(String streamUrl) {
 		this.streamUrl = streamUrl;
 	}
-
 
 	public String getCameraUrl() {
 		return cameraUrl;
@@ -179,6 +183,5 @@ public class CameraDto {
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
-	
-	
+
 }

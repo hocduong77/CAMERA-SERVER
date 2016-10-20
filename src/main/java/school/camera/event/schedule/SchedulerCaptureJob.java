@@ -36,7 +36,7 @@ public class SchedulerCaptureJob implements Job {
 			// CameraDto cameraDto = new CameraDto();
 			// cameraDto.setCameraId(cameraId);
 			try {
-				cameraService.capture(cameraId);
+				cameraService.captureNew(cameraId);
 			} catch (IOException e) {
 				LOGGER.error("  IOException  {}", e);
 			} catch (InterruptedException e) {

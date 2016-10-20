@@ -103,8 +103,15 @@ public class Server2 extends JFrame implements Runnable {
 
 	InetAddress ClientIPAddr; // Client IP address
 	int RTP_dest_port = 0; // destination port for RTP packets (given by
-	String url ; //String url = "rtsp://192.168.1.100:554/live.sdp";
-	
+	String url; // String url = "rtsp://192.168.1.100:554/live.sdp";
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
 
 	public int getRTP_dest_port() {
 		return RTP_dest_port;
@@ -171,8 +178,8 @@ public class Server2 extends JFrame implements Runnable {
 		try {
 
 			final Mat mat = new Mat();
-			String url = "rtsp://192.168.1.100:554/live.sdp";
-			final VideoCapture videoCapture = new VideoCapture(url);
+
+			final VideoCapture videoCapture = new VideoCapture(getUrl());
 			videoCapture.read(mat);
 			Size frameSize = new Size(mat.width(), mat.height());
 
@@ -246,8 +253,9 @@ public class Server2 extends JFrame implements Runnable {
 					// its
 					// size
 					int image_length = Mat2bufferedByte(mat);
-					System.out.print("\n" + image_length);
-					System.out.println("image_length " + image_length + "buff " + buf.length);
+					// System.out.print("\n" + image_length);
+					// System.out.println("image_length " + image_length + "buff
+					// " + buf.length);
 					// Builds an RTPpacket object containing the frame
 					RTPpacket rtp_packet = new RTPpacket(MJPEG_TYPE, imagenb, imagenb * FRAME_PERIOD, buf,
 							image_length);
@@ -268,18 +276,19 @@ public class Server2 extends JFrame implements Runnable {
 						continue;
 					}
 					senddp = new DatagramPacket(packet_bits, packet_length, ClientIPAddr, getRTP_dest_port());
-					System.out.print("RTP_dest_port =" + getRTP_dest_port() + "\n");
+					// System.out.print("RTP_dest_port =" + getRTP_dest_port() +
+					// "\n");
 
 					RTPsocket.send(senddp);
 					// RTSPBufferedWriter.wri
 					// System.out.println("Send frame #"+imagenb);
 					// print the header bitstream
-					rtp_packet.printheader();
+					// rtp_packet.printheader();
 
 					// update GUI
 					label.setText("Send frame #" + imagenb);
 				} catch (Exception ex) {
-					System.out.println("Exception caught: " + ex);
+					// System.out.println("Exception caught: " + ex);
 					System.exit(0);
 				}
 
@@ -295,7 +304,7 @@ public class Server2 extends JFrame implements Runnable {
 		MatOfByte bytemat = new MatOfByte();
 		Highgui.imencode(".jpg", image, bytemat);
 		byte[] bytes = bytemat.toArray();
-		System.out.println("opencv bytes" + bytes.length);
+		// System.out.println("opencv bytes" + bytes.length);
 		InputStream in = new ByteArrayInputStream(bytes);
 		BufferedImage img = null;
 		try {
@@ -311,7 +320,7 @@ public class Server2 extends JFrame implements Runnable {
 		MatOfByte bytemat = new MatOfByte();
 		Highgui.imencode(".jpg", image, bytemat);
 		byte[] bytes = bytemat.toArray();
-		System.out.println("opencv bytes" + bytes.length);
+		// System.out.println("opencv bytes" + bytes.length);
 		for (int i = 0; i < bytes.length; i++) {
 			buf[i] = bytes[i];
 		}

@@ -63,10 +63,12 @@ public class MediaController {
 		// OpenCv opencv = new OpenCv("opencv");
 		// opencv.start();
 		Server2 server1 = new Server2();
+		server1.setUrl("rtsp://192.168.1.100:554/live.sdp");
 		server1.setRTP_dest_port(6699);
 		server1.start();
 
 		Server2 server2 = new Server2();
+		server2.setUrl("rtsp://192.168.1.100:554/live.sdp");
 		server2.setRTP_dest_port(8207);
 		server2.start();
 		ModelAndView mav = new ModelAndView("opencv");

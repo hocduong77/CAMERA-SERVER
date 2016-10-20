@@ -43,7 +43,9 @@ import school.camera.persistence.model.Camera;
 import school.camera.persistence.model.Image;
 import school.camera.persistence.model.User;
 import school.camera.persistence.service.CameraDto;
+import school.camera.persistence.service.ICameraService;
 import school.camera.persistence.service.Message;
+import school.camera.persistence.service.Server2;
 import school.camera.persistence.service.UserDto;
 import school.camera.spring.QuartzConfiguration;
 
@@ -63,12 +65,15 @@ public class CameraController {
 	private ScheduleRepo scheduleRepo;
 
 	@Autowired
+	private ICameraService cameraService;
+
+	@Autowired
 	private QuartzConfiguration quart;
 	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
 	private static boolean isStream = true;
 
-	private static HashMap<Long, Process> streamList = new HashMap<Long, Process>();
+	private static HashMap<Long, Server2> streamList = new HashMap<Long, Server2>();
 
 	public CameraController() {
 
@@ -76,7 +81,7 @@ public class CameraController {
 
 	@RequestMapping(value = "/homepage", method = RequestMethod.GET)
 	public ModelAndView homepage(HttpServletRequest request, Model model) throws IOException {
-		isStream = false;
+		// isStream = false;
 		HttpSession session = request.getSession(false);
 		String email = (String) session.getAttribute("email");
 		LOGGER.info("username {}", email);
@@ -86,20 +91,17 @@ public class CameraController {
 		for (Camera camera : cameras) {
 			if (camera.isEnabled()) {
 				CameraDto cameraDto = new CameraDto();
-				cameraDto.setStreamUrl(startStream(camera));
+				cameraDto.setPort(startStream(camera));
 				cameraDto.setCameraId(camera.getCameraid());
 				cameraDtos.add(cameraDto);
 			}
 
 		}
-		if (isStream == true) {
-			try {
-				Thread.sleep(15000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		/*
+		 * if (isStream == true) { try { Thread.sleep(15000); } catch
+		 * (InterruptedException e) { // TODO Auto-generated catch block
+		 * e.printStackTrace(); } }
+		 */
 
 		return new ModelAndView("homepage", "cameras", cameraDtos);
 	}
@@ -199,7 +201,8 @@ public class CameraController {
 					quart.deleteJob(camera.getCameraid(), "capture");
 				}
 
-				if (schedule.isRecord() == true && schedule.getRecordTime() > 0 && schedule.getRecordSchedule() != null) {
+				if (schedule.isRecord() == true && schedule.getRecordTime() > 0
+						&& schedule.getRecordSchedule() != null) {
 					quart.createRecordTrigger(camera, schedule);
 				} else {
 					quart.deleteJob(camera.getCameraid(), "record");
@@ -247,19 +250,22 @@ public class CameraController {
 			throws IOException, InterruptedException {
 		Long cameraId = Long.parseLong(request.getParameter("cameraId"));
 		LOGGER.info("Rendering test api.{}", cameraId);
-		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
-		String fileName = df.format(new Date());
+		// DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
+		// String fileName = df.format(new Date());
 		Camera camera = cameraRepo.findByCameraid(cameraId);
-		String cmd = "vlc " + camera.getCameraUrl()
-				+ "  --rate=1 --video-filter=scene --vout=dummy --start-time=0 --stop-time=1 --scene-format=jpeg --scene-prefix="
-				+ fileName
-				+ " --scene-replace --scene-path=C:\\Users\\BinhHoc\\Documents\\GitHub\\CAMERA-SERVER\\src\\main\\webapp\\resources\\images"
-				+ " vlc://quit";
-		LOGGER.info("cmd ==== {}", cmd);
-		Runtime runtime = Runtime.getRuntime();
-		Process process = runtime.exec(cmd);
-		process.waitFor();
-		String result = "http://localhost:8080/images/" + fileName + ".jpeg";
+		// String cmd = "vlc " + camera.getCameraUrl()
+		// + " --rate=1 --video-filter=scene --vout=dummy --start-time=0
+		// --stop-time=1 --scene-format=jpeg --scene-prefix="
+		// + fileName
+		// + " --scene-replace
+		// --scene-path=C:\\Users\\BinhHoc\\Documents\\GitHub\\CAMERA-SERVER\\src\\main\\webapp\\resources\\images"
+		// + " vlc://quit";
+		// LOGGER.info("cmd ==== {}", cmd);
+		// Runtime runtime = Runtime.getRuntime();
+		// Process process = runtime.exec(cmd);
+		// process.waitFor();
+		// String result = "http://localhost:8080/images/" + fileName + ".jpeg";
+		String result = cameraService.captureNew(cameraId);
 		Image image = new Image();
 		image.setCamera(camera);
 		image.setDate(new Date());
@@ -356,24 +362,30 @@ public class CameraController {
 		return port;
 	}
 
-	private String startStream(Camera camera) throws IOException {
-		Process process = streamList.get(camera.getCameraid());
-		if (null != process) {
-			return camera.getStreamUrl();
-		}
-		int port = getFreePort();
-		String cmd = "vlc.exe -I dummy " + camera.getCameraUrl()
-				+ " :network-caching=1000 :sout=#transcode{vcodec=theo,vb=1600,scale=1,acodec=none}:http{mux=ogg,dst=:"
-				+ Integer.toString(port) + "/stream} :no-sout-rtp-sap :no-sout-standard-sap :sout-keep vlc://quit";
-		LOGGER.info("cmd ==== {}", cmd);
-		Runtime runtime = Runtime.getRuntime();
-		streamList.put(camera.getCameraid(), runtime.exec(cmd));
-		LOGGER.info("port auto gnerate {}", port);
-		String streamUrl = "http://localhost:" + Integer.toString(port) + "/stream";
-		camera.setStreamUrl(streamUrl);
-		cameraRepo.save(camera);
-		isStream = true;
-		return streamUrl;
+	private int startStream(Camera camera) throws IOException {
+		// Server2 process = streamList.get(camera.getCameraid());
+		// if (null != process) {
+		// return camera.getPort();
+		// }
+		Server2 streamingServer = new Server2();
+		streamingServer.setUrl(camera.getCameraUrl());
+		streamingServer.setRTP_dest_port(camera.getPort());
+		streamingServer.start();
+		// streamList.put(camera.getCameraid(), streamingServer);
+		/*
+		 * int port = getFreePort(); String cmd = "vlc.exe -I dummy " +
+		 * camera.getCameraUrl() +
+		 * " :network-caching=1000 :sout=#transcode{vcodec=theo,vb=1600,scale=1,acodec=none}:http{mux=ogg,dst=:"
+		 * + Integer.toString(port) +
+		 * "/stream} :no-sout-rtp-sap :no-sout-standard-sap :sout-keep vlc://quit"
+		 * ; LOGGER.info("cmd ==== {}", cmd); Runtime runtime =
+		 * Runtime.getRuntime(); streamList.put(camera.getCameraid(),
+		 * runtime.exec(cmd)); LOGGER.info("port auto gnerate {}", port); String
+		 * streamUrl = "http://localhost:" + Integer.toString(port) + "/stream";
+		 * camera.setStreamUrl(streamUrl); cameraRepo.save(camera);
+		 */
+		// isStream = true;
+		return camera.getPort();
 	}
 
 	private CameraDto convert(Camera camera) {
