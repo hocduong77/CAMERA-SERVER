@@ -35,11 +35,11 @@
 		<div class="row">
 		<c:forEach items="${cameras}" var="camera" varStatus="status">
 		<c:choose>
-		<c:when test="${status.index == 0}">
+<%-- 		<c:when test="${status.index == 0}">
 			<div class="col-xs-12 margin-bottom">
 				<div class="video-content text-center">
-				<%-- <video id="video" src="<c:out value="${camera.streamUrl}"/>" type="video/ogg; codecs=theora" autoplay="autoplay" alt="" >									
-				</video> --%>
+				<video id="video" src="<c:out value="${camera.streamUrl}"/>" type="video/ogg; codecs=theora" autoplay="autoplay" alt="" >									
+				</video>
 					<applet name="${camera.cameraId}"
 					CODEBASE="http://localhost:8080/camera-server/resources/resourceapplet"
 					code="camera.class" width="320" height="240">
@@ -54,7 +54,7 @@
 				</div>
 				
 			</div>
-		</c:when>
+		</c:when>  --%>
 		<c:when test="${status.index % 2 == 1}">
 			<div class="col-sm-6 margin-bottom padding-right">
 				<div class="video-content text-center">
@@ -62,7 +62,7 @@
 					</video> --%>
 					<applet name="${camera.cameraId}"
 					CODEBASE="http://localhost:8080/camera-server/resources/resourceapplet"
-					code="camera.class" width="320" height="240">
+					code="camera.class" width="580" height="240">
 					<param name="rtpPort" value="${camera.port}" />
 					<param name="separate_jvm" value="true">
 					</applet>
@@ -81,7 +81,7 @@
 					</video> --%>
 					<applet name="${camera.cameraId}"
 					CODEBASE="http://localhost:8080/camera-server/resources/resourceapplet"
-					code="camera.class" width="320" height="240">
+					code="camera.class" width="580" height="240">
 					<param name="rtpPort" value="${camera.port}" />
 					<param name="separate_jvm" value="true">
 					</applet>

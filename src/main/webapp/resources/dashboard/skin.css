@@ -398,6 +398,7 @@ video, img{
 	padding-right: 5px;	}
 
 .video-content {
+	height: 320px;
 	position: relative;}
 .video-controls {
 	position: absolute;

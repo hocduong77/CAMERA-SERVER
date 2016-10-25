@@ -14,8 +14,15 @@
 		<version>1.1.6.RELEASE</version>
 	</parent>
 
-	<!-- <repositories> <repository> <id>javaopencvbook</id> <url>https://raw.github.com/JavaOpenCVBook/code/maven2/</url> 
-		</repository> </repositories> -->
+	<repositories>
+
+		<repository>
+			<id>xuggle repo</id>
+			<url>http://xuggle.googlecode.com/svn/trunk/repo/share/java/</url>
+		</repository>
+
+	</repositories>
+
 
 	<dependencies>
 
@@ -26,6 +33,23 @@
 
 		<!-- Spring -->
 		<!-- https://mvnrepository.com/artifact/nu.pattern/opencv -->
+		<!-- xuggle -->
+		<dependency>
+			<groupId>xuggle</groupId>
+			<artifactId>xuggle-xuggler</artifactId>
+			<version>5.4</version>
+		</dependency>
+		<!-- logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${org.slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${org.slf4j.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>nu.pattern</groupId>
 			<artifactId>opencv</artifactId>

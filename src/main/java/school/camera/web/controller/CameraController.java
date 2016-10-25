@@ -280,34 +280,55 @@ public class CameraController {
 		LOGGER.info("Rendering test api.{}", url);
 		HttpSession session = request.getSession(false);
 		session.setAttribute("camera_test_url", url);
-		int port = getFreePort();
-		String cmd = "vlc.exe -I dummy " + url
-				+ " :network-caching=1000 :sout=#transcode{vcodec=theo,vb=1600,scale=1,acodec=none}:http{mux=ogg,dst=:"
-				+ Integer.toString(port) + "/stream} :no-sout-rtp-sap :no-sout-standard-sap :sout-keep vlc://quit";
-		LOGGER.info("cmd ==== {}", cmd);
+		// int port = getFreePort();
+		// String cmd = "vlc.exe -I dummy " + url
+		// + " :network-caching=1000
+		// :sout=#transcode{vcodec=theo,vb=1600,scale=1,acodec=none}:http{mux=ogg,dst=:"
+		// + Integer.toString(port) + "/stream} :no-sout-rtp-sap
+		// :no-sout-standard-sap :sout-keep vlc://quit";
+		// LOGGER.info("cmd ==== {}", cmd);
+		//
+		// Runtime runtime = Runtime.getRuntime();
+		//
+		// Process process = runtime.exec(cmd);
+		// try {
+		// Thread.sleep(15000);
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// <applet name="Test"
+		// CODEBASE="http://localhost:8080/camera-server/resources/resourceapplet"
+		// code="camera.class" width="580" height="240">
+		// <param name="rtpPort" value="4499" />
+		// <param name="separate_jvm" value="true">
+		// </applet>
 
-		Runtime runtime = Runtime.getRuntime();
+		Server2 streamingServer = new Server2();
+		streamingServer.setUrl(url);
+		streamingServer.setRTP_dest_port(4499);
+		streamingServer.start();
 
-		Process process = runtime.exec(cmd);
-		try {
-			Thread.sleep(15000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		session.setAttribute("test_camera", process);
+		// session.setAttribute("test_camera", process);
 		LOGGER.info("return stream url");
-		String result = "<video id=\"video\" src=\"http://localhost:" + Integer.toString(port)
-				+ "/stream\" type=\"video/ogg; codecs=theora\" autoplay=\"autoplay\"/>";
-		LOGGER.info("result ==== {}", result);
-		return result;
+		String resultTest = "<applet name=\"Test\""
+				+ "CODEBASE=\"http://localhost:8080/camera-server/resources/resourceapplet\""
+				+ "code=\"camera.class\" width=\"580\" height=\"240\">" + "<param name=\"rtpPort\" value=\"4499\" />"
+				+ "<param name=\"separate_jvm\" value=\"true\">" + "</applet>";
+		//
+		// String resultTest = "<video id=\"video\" src=\"http://localhost:" +
+		// Integer.toString(port)
+		// + "/stream\" type=\"video/ogg; codecs=theora\"
+		// autoplay=\"autoplay\"/>";
+		LOGGER.info("result ==== {}", resultTest);
+		return resultTest;
 	}
 
 	@RequestMapping(value = "/saveCamera", method = RequestMethod.GET)
 	public ModelAndView saveCamera(HttpServletRequest request, Model model) {
 		HttpSession session = request.getSession(false);
 		String cameraUrl = (String) session.getAttribute("camera_test_url");
-		Process process = (Process) session.getAttribute("test_camera");
+		//Process process = (Process) session.getAttribute("test_camera");
 		LOGGER.info("camera_test_url {}", cameraUrl);
 		String alias = generateAlias();
 		Camera camera = new Camera();
@@ -321,7 +342,7 @@ public class CameraController {
 		camera.setUser(user);
 		cameraRepo.save(camera);
 		List<CameraDto> cameras = getListCameras(user);
-		process.destroy();
+		//process.destroy();
 		return new ModelAndView("cameras", "cameras", cameras);
 	}
 
