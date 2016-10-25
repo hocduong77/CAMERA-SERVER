@@ -181,7 +181,11 @@ public class Server2 extends JFrame implements Runnable {
 
 			final VideoCapture videoCapture = new VideoCapture(getUrl());
 			videoCapture.read(mat);
-			Size frameSize = new Size(mat.width(), mat.height());
+			Mat resizeMat = new Mat();
+			Size sz = new Size(480, 350);
+			Imgproc.resize(mat, resizeMat, sz);
+
+			Size frameSize = new Size(resizeMat.width(), resizeMat.height());
 
 			final Mat workImg = new Mat();
 			Mat movingAvgImg = null;
@@ -207,8 +211,12 @@ public class Server2 extends JFrame implements Runnable {
 			RTPsocket = new DatagramSocket();
 
 			while (videoCapture.read(mat)) {
+				Mat processMat = new Mat();
+				Size size = new Size(480, 350);
+				Imgproc.resize(mat, processMat, size);
+
 				// Generate work image by blurring
-				Imgproc.blur(mat, workImg, kSize);
+				Imgproc.blur(processMat, workImg, kSize);
 				// Generate moving average image if needed
 				if (movingAvgImg == null) {
 					movingAvgImg = new Mat();
@@ -244,7 +252,7 @@ public class Server2 extends JFrame implements Runnable {
 						rectPoint2.x = rect.x + rect.width;
 						rectPoint2.y = rect.y + rect.height;
 						// Draw rectangle around fond object
-						Core.rectangle(mat, rectPoint1, rectPoint2, rectColor, 2);
+						Core.rectangle(processMat, rectPoint1, rectPoint2, rectColor, 2);
 					}
 				}
 
@@ -252,7 +260,7 @@ public class Server2 extends JFrame implements Runnable {
 					// get next frame to send from the video, as well as
 					// its
 					// size
-					int image_length = Mat2bufferedByte(mat);
+					int image_length = Mat2bufferedByte(processMat);
 					// System.out.print("\n" + image_length);
 					// System.out.println("image_length " + image_length + "buff
 					// " + buf.length);

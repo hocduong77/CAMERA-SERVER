@@ -115,7 +115,7 @@ public class CameraService implements ICameraService {
 		videoCapture.read(frame);
 
 		if (!videoCapture.isOpened()) {
-			System.out.println("Error");
+			LOGGER.error("camera can not open");
 		} else {
 			while (true) {
 
