@@ -24,7 +24,8 @@
 		<intercept-url pattern="/invalidSession*" access="isAnonymous()" />
 		<intercept-url pattern="/cameras*" access="isAuthenticated()" />
 		<intercept-url pattern="/addcamera*" access="isAuthenticated()" />
-		<intercept-url pattern="/test*" access="isAuthenticated()" />
+		<intercept-url pattern="/test*" access="isAuthenticated()" />  
+		<intercept-url pattern="/sec_setting*" access="permitAll" />
 		<intercept-url pattern="/saveCamera*" access="isAuthenticated()" />
 		<intercept-url pattern="/setting*" access="isAuthenticated()" />
 		<intercept-url pattern="/capture*" access="isAuthenticated()" />

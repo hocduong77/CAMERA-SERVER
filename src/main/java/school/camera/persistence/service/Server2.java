@@ -42,6 +42,7 @@ import org.opencv.core.Size;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({ "checkstyle:magicnumber", "PMD.LawOfDemeter", "PMD.AvoidLiteralsInIfCondition",
 		"PMD.AvoidInstantiatingObjectsInLoops", "PMD.AvoidUsingNativeCode", "PMD.AvoidFinalLocalVariable",
@@ -133,6 +134,12 @@ public class Server2 extends JFrame implements Runnable {
 	int FRAME_PERIOD = 100; // Frame period of the video to stream, in ms
 	int VIDEO_LENGTH = 500; // length of the video in frames
 
+	public double objectWith;
+
+	public double objectHeight;
+
+	public Long cameraId;
+	
 	Timer timer; // timer used to send the images at the video frame rate
 	byte[] buf; // buffer used to store the images to send to the client
 
@@ -211,6 +218,8 @@ public class Server2 extends JFrame implements Runnable {
 			RTPsocket = new DatagramSocket();
 
 			while (videoCapture.read(mat)) {
+
+				System.out.println("cameraId " +cameraId + " objectWith " + objectWith + " objectHeight " + objectHeight);
 				Mat processMat = new Mat();
 				Size size = new Size(480, 350);
 				Imgproc.resize(mat, processMat, size);

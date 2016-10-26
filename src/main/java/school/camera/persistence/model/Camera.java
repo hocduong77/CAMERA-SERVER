@@ -35,6 +35,12 @@ public class Camera {
 	
 	private int port;
 
+	private boolean security;
+	
+	private double objectWith;
+	
+	private double objectHeight;
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "userid", nullable = false)
 	private User user;
@@ -48,6 +54,36 @@ public class Camera {
 	@OneToOne(mappedBy = "camera", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private CamearSchedule schedule;
 	
+	
+
+	public double getObjectWith() {
+		return objectWith;
+	}
+
+	public void setObjectWith(double objectWith) {
+		this.objectWith = objectWith;
+	}
+
+	public double getObjectHeight() {
+		return objectHeight;
+	}
+
+	public void setObjectHeight(double objectHeight) {
+		this.objectHeight = objectHeight;
+	}
+
+	public void setObjectHeight(int objectHeight) {
+		this.objectHeight = objectHeight;
+	}
+
+	public boolean isSecurity() {
+		return security;
+	}
+
+	public void setSecurity(boolean security) {
+		this.security = security;
+	}
+
 	public int getPort() {
 		return port;
 	}

@@ -8,4 +8,6 @@ public interface ICameraService {
 	void record(Long cameraId) throws IOException, InterruptedException;
 	
 	String captureNew(Long cameraId) throws IOException, InterruptedException;
+	
+	String recordNew(Long cameraId) throws IOException, InterruptedException;
 }

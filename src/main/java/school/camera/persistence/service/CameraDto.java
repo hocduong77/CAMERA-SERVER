@@ -1,7 +1,5 @@
 package school.camera.persistence.service;
 
-import java.util.Date;
-
 public class CameraDto {
 
 	private Long cameraId;
@@ -15,6 +13,8 @@ public class CameraDto {
 	private String streamUrl;
 
 	private boolean enabled;
+
+	private boolean security;
 
 	private boolean capture;
 
@@ -39,6 +39,14 @@ public class CameraDto {
 	private String recordTo;
 
 	private int port;
+
+	public boolean isSecurity() {
+		return security;
+	}
+
+	public void setSecurity(boolean security) {
+		this.security = security;
+	}
 
 	public int getPort() {
 		return port;

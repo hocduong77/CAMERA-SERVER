@@ -79,6 +79,21 @@ public class CameraController {
 
 	}
 
+	@RequestMapping(value = "/sec_setting", method = RequestMethod.GET)
+	public String securitySetting(HttpServletRequest request, Model model) throws IOException {
+		Long cameraId = Long.parseLong(request.getParameter("cameraId"));
+		double with = Double.parseDouble(request.getParameter("with"));
+		double height = Double.parseDouble(request.getParameter("height"));
+		LOGGER.info("Rendering test cameraId {} with {} height {}", cameraId, with, height);
+		Server2 process = streamList.get(cameraId);
+		if (process != null) {
+			process.objectWith = with;
+			process.objectHeight = height;
+		}
+		String result = cameraId + "/ " + with + "/" + height;
+		return result;
+	}
+
 	@RequestMapping(value = "/homepage", method = RequestMethod.GET)
 	public ModelAndView homepage(HttpServletRequest request, Model model) throws IOException {
 		// isStream = false;
@@ -146,6 +161,7 @@ public class CameraController {
 		if (camera == null) {
 			return new ModelAndView("setting", "cameras", cameraDto);
 		}
+		camera.setSecurity(cameraDto.isSecurity());
 		if (cameraDto.isEnabled() == false) {
 			camera.setEnabled(false);
 			// delete all schedule
@@ -328,7 +344,7 @@ public class CameraController {
 	public ModelAndView saveCamera(HttpServletRequest request, Model model) {
 		HttpSession session = request.getSession(false);
 		String cameraUrl = (String) session.getAttribute("camera_test_url");
-		//Process process = (Process) session.getAttribute("test_camera");
+		// Process process = (Process) session.getAttribute("test_camera");
 		LOGGER.info("camera_test_url {}", cameraUrl);
 		String alias = generateAlias();
 		Camera camera = new Camera();
@@ -342,7 +358,7 @@ public class CameraController {
 		camera.setUser(user);
 		cameraRepo.save(camera);
 		List<CameraDto> cameras = getListCameras(user);
-		//process.destroy();
+		// process.destroy();
 		return new ModelAndView("cameras", "cameras", cameras);
 	}
 
@@ -392,7 +408,10 @@ public class CameraController {
 		streamingServer.setUrl(camera.getCameraUrl());
 		streamingServer.setRTP_dest_port(camera.getPort());
 		streamingServer.start();
-		// streamList.put(camera.getCameraid(), streamingServer);
+		streamingServer.cameraId = camera.getCameraid();
+		streamingServer.objectWith = camera.getObjectWith();
+		streamingServer.objectHeight = camera.getObjectHeight();
+		streamList.put(camera.getCameraid(), streamingServer);
 		/*
 		 * int port = getFreePort(); String cmd = "vlc.exe -I dummy " +
 		 * camera.getCameraUrl() +

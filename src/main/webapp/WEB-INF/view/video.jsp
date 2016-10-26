@@ -85,7 +85,7 @@
 					<div class="list-item list-video">
 						<div class="video">
 								<video width="100%" height="auto" controls="">
-									<source src="${video}" type="video/ogg">
+									<source src="${video}" type="video/mp4">
 								</video>
 							</div>
 					</div>
