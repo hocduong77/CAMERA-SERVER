@@ -3,7 +3,6 @@ package school.camera.web.controller;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,21 +14,17 @@ import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
@@ -44,9 +39,7 @@ import school.camera.persistence.model.Image;
 import school.camera.persistence.model.User;
 import school.camera.persistence.service.CameraDto;
 import school.camera.persistence.service.ICameraService;
-import school.camera.persistence.service.Message;
 import school.camera.persistence.service.Server2;
-import school.camera.persistence.service.UserDto;
 import school.camera.spring.QuartzConfiguration;
 
 @Controller
@@ -80,7 +73,7 @@ public class CameraController {
 	}
 
 	@RequestMapping(value = "/sec_setting", method = RequestMethod.GET)
-	public String securitySetting(HttpServletRequest request, Model model) throws IOException {
+	public @ResponseBody String securitySetting(HttpServletRequest request, Model model) throws IOException {
 		Long cameraId = Long.parseLong(request.getParameter("cameraId"));
 		double with = Double.parseDouble(request.getParameter("with"));
 		double height = Double.parseDouble(request.getParameter("height"));
@@ -89,6 +82,10 @@ public class CameraController {
 		if (process != null) {
 			process.objectWith = with;
 			process.objectHeight = height;
+			Camera camera = cameraRepo.findByCameraid(cameraId);
+			camera.setObjectWith(with);
+			camera.setObjectHeight(height);
+			cameraRepo.save(camera);
 		}
 		String result = cameraId + "/ " + with + "/" + height;
 		return result;
@@ -108,6 +105,8 @@ public class CameraController {
 				CameraDto cameraDto = new CameraDto();
 				cameraDto.setPort(startStream(camera));
 				cameraDto.setCameraId(camera.getCameraid());
+				cameraDto.setObjectWith(camera.getObjectWith());
+				cameraDto.setObjectHeight(camera.getObjectHeight());
 				cameraDtos.add(cameraDto);
 			}
 

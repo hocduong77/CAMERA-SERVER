@@ -22,9 +22,9 @@ public class RecordService {
 
 	private static final double FRAME_RATE = 50;
 
-	private static final int SECONDS_TO_RUN_FOR = 10;
+	private static final int SECONDS_TO_RUN_FOR = 100;
 
-	private static final String outputFilename = "D:/DownLoad/video.mp4";
+	private static final String outputFilename = "D:/DownLoad/stream.mp4";
 
 	private static Dimension screenBounds;
 

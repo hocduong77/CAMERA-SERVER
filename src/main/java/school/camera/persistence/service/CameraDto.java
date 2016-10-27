@@ -40,6 +40,27 @@ public class CameraDto {
 
 	private int port;
 
+	private double objectWith;
+	
+	private double objectHeight;
+	
+	
+	public double getObjectWith() {
+		return objectWith;
+	}
+
+	public void setObjectWith(double objectWith) {
+		this.objectWith = objectWith;
+	}
+
+	public double getObjectHeight() {
+		return objectHeight;
+	}
+
+	public void setObjectHeight(double objectHeight) {
+		this.objectHeight = objectHeight;
+	}
+
 	public boolean isSecurity() {
 		return security;
 	}

@@ -70,11 +70,7 @@ public class Camera {
 
 	public void setObjectHeight(double objectHeight) {
 		this.objectHeight = objectHeight;
-	}
-
-	public void setObjectHeight(int objectHeight) {
-		this.objectHeight = objectHeight;
-	}
+	}	
 
 	public boolean isSecurity() {
 		return security;
