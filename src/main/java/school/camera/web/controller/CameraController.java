@@ -31,6 +31,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IImageRepo;
+import school.camera.persistence.dao.IVideoRepo;
 import school.camera.persistence.dao.ScheduleRepo;
 import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.CamearSchedule;
@@ -59,6 +60,9 @@ public class CameraController {
 
 	@Autowired
 	private ICameraService cameraService;
+	
+	@Autowired
+	private IVideoRepo videoRepo;
 
 	@Autowired
 	private QuartzConfiguration quart;
@@ -406,10 +410,13 @@ public class CameraController {
 		Server2 streamingServer = new Server2();
 		streamingServer.setUrl(camera.getCameraUrl());
 		streamingServer.setRTP_dest_port(camera.getPort());
-		streamingServer.start();
+		
 		streamingServer.cameraId = camera.getCameraid();
 		streamingServer.objectWith = camera.getObjectWith();
 		streamingServer.objectHeight = camera.getObjectHeight();
+		streamingServer.cameraRepo = cameraRepo;
+		streamingServer.videoRepo = videoRepo;
+		streamingServer.start();
 		streamList.put(camera.getCameraid(), streamingServer);
 		/*
 		 * int port = getFreePort(); String cmd = "vlc.exe -I dummy " +

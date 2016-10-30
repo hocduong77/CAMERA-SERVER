@@ -201,7 +201,7 @@ public class CameraService implements ICameraService {
 
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-		VideoCapture videoCapture = new VideoCapture("rtsp://192.168.1.100:554/live.sdp");
+		VideoCapture videoCapture = new VideoCapture(camera.getCameraUrl());
 		Mat frame = new Mat();
 
 		for (int index = 0; index < SECONDS_TO_RUN_FOR * FRAME_RATE; index++) {
@@ -238,9 +238,7 @@ public class CameraService implements ICameraService {
 	}
 
 	private BufferedImage convertToType(BufferedImage sourceImage, int targetType) {
-
 		BufferedImage image;
-
 		// if the source image is already the target type, return the source
 		// image
 		if (sourceImage.getType() == targetType) {
@@ -252,9 +250,7 @@ public class CameraService implements ICameraService {
 			image = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(), targetType);
 			image.getGraphics().drawImage(sourceImage, 0, 0, null);
 		}
-
 		return image;
-
 	}
 
 	private BufferedImage recordMatToBufferedImage(Mat frame) {
