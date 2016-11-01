@@ -64,6 +64,7 @@ public class CameraController {
 	@Autowired
 	private IVideoRepo videoRepo;
 
+	
 	@Autowired
 	private QuartzConfiguration quart;
 	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -403,10 +404,11 @@ public class CameraController {
 	}
 
 	private int startStream(Camera camera) throws IOException {
-		// Server2 process = streamList.get(camera.getCameraid());
-		// if (null != process) {
-		// return camera.getPort();
-		// }
+		 Server2 process = streamList.get(camera.getCameraid());
+		 if (null != process) {
+		 return camera.getPort();
+		 }
+		
 		Server2 streamingServer = new Server2();
 		streamingServer.setUrl(camera.getCameraUrl());
 		streamingServer.setRTP_dest_port(camera.getPort());
@@ -416,6 +418,7 @@ public class CameraController {
 		streamingServer.objectHeight = camera.getObjectHeight();
 		streamingServer.cameraRepo = cameraRepo;
 		streamingServer.videoRepo = videoRepo;
+		streamingServer.imageRepo = imageRepo;
 		streamingServer.start();
 		streamList.put(camera.getCameraid(), streamingServer);
 		/*

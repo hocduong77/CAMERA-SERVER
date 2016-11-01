@@ -18,7 +18,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -45,6 +44,7 @@ import com.xuggle.mediatool.ToolFactory;
 import com.xuggle.xuggler.ICodec;
 
 import school.camera.persistence.dao.CameraRepo;
+import school.camera.persistence.dao.IImageRepo;
 import school.camera.persistence.dao.IVideoRepo;
 import school.camera.persistence.model.Camera;
 import school.camera.persistence.model.Video;
@@ -58,7 +58,7 @@ public class Server2 extends JFrame implements Runnable {
 	public IVideoRepo videoRepo;
 
 	public CameraRepo cameraRepo;
-
+	public IImageRepo imageRepo;
 	public Thread thread;
 	private RecordServer recordServer;
 	// opencv
@@ -157,6 +157,8 @@ public class Server2 extends JFrame implements Runnable {
 
 	Date recordTime = null;
 
+	Date captureTime = null;
+
 	boolean isDetected = false;
 
 	Timer timer; // timer used to send the images at the video frame rate
@@ -168,8 +170,9 @@ public class Server2 extends JFrame implements Runnable {
 
 	private IMediaWriter mediaWriter;
 	private String videoName;
-	
+
 	private long startTime = 0;
+
 	// --------------------------------
 	// Constructor
 	// --------------------------------
@@ -203,13 +206,13 @@ public class Server2 extends JFrame implements Runnable {
 	private IMediaWriter getMedia() {
 		// record =====================================
 		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
-		this.videoName =  cameraId.toString() + "_" + df.format(new Date()) + ".mp4";
+		this.videoName = cameraId.toString() + "_" + df.format(new Date()) + ".mp4";
 		String fileName = "C:/Users/BinhHoc/Documents/GitHub/CAMERA-SERVER/src/main/webapp/resources/videos/"
 				+ videoName;
 
 		double FRAME_RATE = 50;
 
-		// let's make a IMediaWriter to write the file.		
+		// let's make a IMediaWriter to write the file.
 		IMediaWriter writer = ToolFactory.makeWriter(fileName);
 
 		Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
@@ -221,8 +224,6 @@ public class Server2 extends JFrame implements Runnable {
 	@Override
 	public void run() {
 		try {
-
-			
 
 			System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
@@ -314,8 +315,13 @@ public class Server2 extends JFrame implements Runnable {
 					}
 					if (isDetected) {
 						recordTime = new Date();
+
 					}
 				}
+
+				// if (isCapture()) {
+				// faceDetector(mat);
+				// }
 				// check save or not.
 				// save image
 				// System.out.println(isDetected + "/" + isSaving(recordTime));
@@ -334,6 +340,7 @@ public class Server2 extends JFrame implements Runnable {
 					 * recordServer.objectHeight = this.objectHeight;
 					 * recordServer.start();
 					 */
+					System.out.println("start record");
 					this.startTime = System.nanoTime();
 					this.mediaWriter = getMedia();
 					recordBefore = true;
@@ -355,7 +362,7 @@ public class Server2 extends JFrame implements Runnable {
 					this.mediaWriter = null;
 					recordTime = null;
 					recordBefore = false;
-					
+
 					Camera camera = cameraRepo.findByCameraid(cameraId);
 					String result = "http://localhost:8080/videos/" + this.videoName;
 					Video video = new Video();
@@ -363,7 +370,7 @@ public class Server2 extends JFrame implements Runnable {
 					video.setDate(new Date());
 					video.setVideoUrl(result);
 					videoRepo.save(video);
-					
+					System.out.println("stop record");
 				}
 
 				try {
@@ -408,6 +415,60 @@ public class Server2 extends JFrame implements Runnable {
 		}
 
 	}
+
+	// private void faceDetector(Mat frame) {
+	//
+	// CascadeClassifier faceDetector = new
+	// CascadeClassifier("D:/DownLoad/haarcascade_frontalface_alt.xml");
+	//
+	// MatOfRect faceDetections = new MatOfRect();
+	// faceDetector.detectMultiScale(frame, faceDetections);
+	//
+	// System.out.println(String.format("Detected %s faces",
+	// faceDetections.toArray().length));
+	// if (faceDetections.toArray().length >= 1) {
+	// this.captureTime = new Date();
+	// for (Rect rect : faceDetections.toArray()) {
+	// Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x +
+	// rect.width, rect.y + rect.height),
+	// new Scalar(0, 255, 0));
+	// }
+	// DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
+	// String imageName = cameraId.toString() + "_" + df.format(new Date()) +
+	// ".png";
+	// String fileName =
+	// "C:/Users/BinhHoc/Documents/GitHub/CAMERA-SERVER/src/main/webapp/resources/images/"
+	// + imageName ;
+	// System.out.println(String.format("Writing %s", fileName));
+	// Highgui.imwrite(fileName, frame);
+	// Camera camera = cameraRepo.findByCameraid(cameraId);
+	// Image image = new Image();
+	// image.setCamera(camera);
+	// image.setDate(new Date());
+	// String result = "http://localhost:8080/images/" + imageName ;
+	// image.setImageUrl(result);
+	// imageRepo.save(image);
+	// } else {
+	// return;
+	// }
+	//
+	// }
+
+//	private boolean isCapture() {
+//		if (this.captureTime == null) {
+//			return true;
+//		}
+//		Date d2 = new Date();
+//		long seconds = (d2.getTime() - this.captureTime.getTime()) / 1000;
+//		// System.out.println(" diff time = " + seconds);
+//		if (seconds > 10) {
+//
+//			return true;
+//		} else {
+//			return false;
+//		}
+//
+//	}
 
 	private boolean isSaving(Date recordStart) {
 		if (recordStart == null) {
@@ -490,4 +551,7 @@ public class Server2 extends JFrame implements Runnable {
 			thread.start();
 		}
 	}
+	
+	
+	
 }

@@ -20,11 +20,10 @@
 	content="Video streaming solution for embedding your IP camera live video stream in web page.">
 <meta name="author" content="">
 
-<link href="<c:url value="/resources/dashboard/bootstrap.min.css"/>"
-	rel="stylesheet">
+<link href="<c:url value="/resources/dashboard/bootstrap.min.css"/>" rel="stylesheet">
 
 <script src="<c:url value="/resources/dashboard/jquery-1.11.2.min.js"/>"></script>
-<script src="<c:url value="/resources/dashboard/bootstrap.min.js"/>"></script>
+<script src="<c:url value="/resources/dashboard/bootstrap.js"/>"></script>
 <script src="<c:url value="/resources/dashboard/script.js"/>"></script>
 
 <link
@@ -32,7 +31,10 @@
 	rel="stylesheet">
 <link href="<c:url value="/resources/dashboard/skin.css"/>"
 	rel="stylesheet">
-
+<style>
+.cac {margin-top: 8px;}
+.col-sm-6 {width:500px;}
+</style>
 
 </head>
 
@@ -79,11 +81,11 @@
 										<button id="${camera.cameraId}" type="button"
 											onclick="capture(this.id)" class="capture">Capture</button>
 										<input type="text" id="${camera.cameraId}with"
-											value="${camera.objectWith}" type="button" class="col-sm-2">
+											value="${camera.objectWith}" type="button" class="col-sm-2 cac">
 										<input type="text" id="${camera.cameraId}height"
-											value="${camera.objectHeight}" class="col-sm-2">
+											value="${camera.objectHeight}" class="col-sm-2 cac">
 										<button id="${camera.cameraId}" onclick="setSecu(this.id)"
-											type="button" class="play-stop curr-play">Play</button>
+											type="button" class="cac">Play</button>
 										<!-- <button class="record">Record</button> -->
 									</div>
 								</div>
@@ -105,12 +107,12 @@
 										<button id="${camera.cameraId}" type="button"
 											onclick="capture(this.id)" class="capture">Capture</button>
 										<input type="text" id="${camera.cameraId}with"
-											value="${camera.objectWith}" class="col-sm-2"
+											value="${camera.objectWith}" class="col-sm-2 cac"
 											placeholder="with"> <input type="text"
 											id="${camera.cameraId}height" value="${camera.objectHeight}"
-											class="col-sm-2" placeholder="height">
+											class="col-sm-2 cac" placeholder="height">
 										<button id="${camera.cameraId}" onclick="setSecu(this.id)"
-											type="button" class="play-stop curr-play">Play</button>
+											type="button" class="cac">Play</button>
 										<!-- <button class="record">Record</button> -->
 									</div>
 								</div>
@@ -165,6 +167,7 @@
 		}
 
 		function capture(cameraId) {
+			$('.container').hide();
 			console.log("cameraId" + cameraId);
 			$.ajax({
 				type : "post",
