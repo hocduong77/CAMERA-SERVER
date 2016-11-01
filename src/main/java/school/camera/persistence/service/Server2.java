@@ -19,6 +19,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
@@ -61,6 +63,11 @@ public class Server2 extends JFrame implements Runnable {
 	public IImageRepo imageRepo;
 	public Thread thread;
 	private RecordServer recordServer;
+
+	ExecutorService executor = Executors.newFixedThreadPool(5);// creating a
+																// pool of 5
+																// threads
+
 	// opencv
 	/**
 	 * Logger.
@@ -96,13 +103,18 @@ public class Server2 extends JFrame implements Runnable {
 		Imgproc.dilate(source, source, CONTOUR_KERNEL, CONTOUR_POINT, 15);
 		Imgproc.erode(source, source, CONTOUR_KERNEL, CONTOUR_POINT, 10);
 		final List<MatOfPoint> contoursList = new ArrayList<MatOfPoint>();
-		Imgproc.findContours(source, contoursList, HIERARCHY, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 		final List<Rect> rectList = new ArrayList<Rect>();
-		// Convert MatOfPoint to Rectangles
-		for (final MatOfPoint mop : contoursList) {
-			rectList.add(Imgproc.boundingRect(mop));
-			// Release native memory
+		try {
+			Imgproc.findContours(source, contoursList, HIERARCHY, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+			// Convert MatOfPoint to Rectangles
+			for (final MatOfPoint mop : contoursList) {
+				rectList.add(Imgproc.boundingRect(mop));
+				// Release native memory
+			}
+		} catch (Exception e) {
+			return rectList;
 		}
+
 		return rectList;
 	}
 
@@ -261,118 +273,97 @@ public class Server2 extends JFrame implements Runnable {
 			ClientIPAddr = InetAddress.getByName("localhost");
 			RTPsocket = new DatagramSocket();
 			boolean recordBefore = false;
+			Camera camera = cameraRepo.findByCameraid(cameraId);
 			while (videoCapture.read(mat)) {
-
-				// System.out.println(
-				// "cameraId " + cameraId + " objectWith " + objectWith + "
-				// objectHeight " + objectHeight);
 				Mat processMat = new Mat();
 				Size size = new Size(480, 350);
 				Imgproc.resize(mat, processMat, size);
+				if (camera.isSecurity()) {
+					// Generate work image by blurring
+					Imgproc.blur(processMat, workImg, kSize);
+					// Generate moving average image if needed
+					if (movingAvgImg == null) {
+						movingAvgImg = new Mat();
+						workImg.convertTo(movingAvgImg, CvType.CV_32F);
 
-				// Generate work image by blurring
-				Imgproc.blur(processMat, workImg, kSize);
-				// Generate moving average image if needed
-				if (movingAvgImg == null) {
-					movingAvgImg = new Mat();
+					}
+					// Generate moving average image
+					Imgproc.accumulateWeighted(workImg, movingAvgImg, .03);
+					// Convert the scale of the moving average
+					Core.convertScaleAbs(movingAvgImg, scaleImg);
+					// Subtract the work image frame from the scaled image
+					// average
+					Core.absdiff(workImg, scaleImg, diffImg);
+					// Convert the image to grayscale
+					Imgproc.cvtColor(diffImg, gray, Imgproc.COLOR_BGR2GRAY);
+					// Convert to BW
+					Imgproc.threshold(gray, gray, 25, 255, Imgproc.THRESH_BINARY);
+					// Total number of changed motion pixels
+					motionPercent = 100.0 * Core.countNonZero(gray) / totalPixels;
+					// Detect if camera is adjusting and reset reference if
+					// more
+					// than
+					// 25%
+					// if (motionPercent > 50.0) {
 					workImg.convertTo(movingAvgImg, CvType.CV_32F);
+					// }
+					final List<Rect> movementLocations = contours(gray);
+					// Threshold trigger motion
+					// if (motionPercent > 5) {
+					isDetected = false;
+					for (final Rect rect : movementLocations) {
 
-				}
-				// Generate moving average image
-				Imgproc.accumulateWeighted(workImg, movingAvgImg, .03);
-				// Convert the scale of the moving average
-				Core.convertScaleAbs(movingAvgImg, scaleImg);
-				// Subtract the work image frame from the scaled image
-				// average
-				Core.absdiff(workImg, scaleImg, diffImg);
-				// Convert the image to grayscale
-				Imgproc.cvtColor(diffImg, gray, Imgproc.COLOR_BGR2GRAY);
-				// Convert to BW
-				Imgproc.threshold(gray, gray, 25, 255, Imgproc.THRESH_BINARY);
-				// Total number of changed motion pixels
-				motionPercent = 100.0 * Core.countNonZero(gray) / totalPixels;
-				// Detect if camera is adjusting and reset reference if
-				// more
-				// than
-				// 25%
-				// if (motionPercent > 50.0) {
-				workImg.convertTo(movingAvgImg, CvType.CV_32F);
-				// }
-				final List<Rect> movementLocations = contours(gray);
-				// Threshold trigger motion
-				// if (motionPercent > 5) {
-				isDetected = false;
-				for (final Rect rect : movementLocations) {
+						if (rect.height > objectHeight && rect.width > objectWith) {
+							isDetected = true;
+							rectPoint1.x = rect.x;
+							rectPoint1.y = rect.y;
+							rectPoint2.x = rect.x + rect.width;
+							rectPoint2.y = rect.y + rect.height;
+							// Draw rectangle around fond object
+							Core.rectangle(processMat, rectPoint1, rectPoint2, rectColor, 2);
+						}
 
-					if (rect.height > objectHeight && rect.width > objectWith) {
-						isDetected = true;
-						rectPoint1.x = rect.x;
-						rectPoint1.y = rect.y;
-						rectPoint2.x = rect.x + rect.width;
-						rectPoint2.y = rect.y + rect.height;
-						// Draw rectangle around fond object
-						Core.rectangle(processMat, rectPoint1, rectPoint2, rectColor, 2);
 					}
 					if (isDetected) {
 						recordTime = new Date();
-
+						faceDetector(mat);
 					}
-				}
+					if (isDetected == true && recordBefore == false) {
 
-				// if (isCapture()) {
-				// faceDetector(mat);
-				// }
-				// check save or not.
-				// save image
-				// System.out.println(isDetected + "/" + isSaving(recordTime));
-				if (isDetected == true && recordBefore == false) {
-					/*
-					 * DateFormat df = new
-					 * SimpleDateFormat("MM_dd_yyyy_HH_mm_ss"); String videoName
-					 * = df.format(new Date()); System.out.println(
-					 * "start record " + videoName); recordServer = new
-					 * RecordServer(); recordServer.setUrl(getUrl());
-					 * recordServer.stop = false; System.out.println("cameraId "
-					 * + cameraId); recordServer.cameraId = this.cameraId;
-					 * recordServer.cameraRepo = this.cameraRepo;
-					 * recordServer.videoRepo = this.videoRepo;
-					 * recordServer.objectWith = this.objectWith;
-					 * recordServer.objectHeight = this.objectHeight;
-					 * recordServer.start();
-					 */
-					System.out.println("start record");
-					this.startTime = System.nanoTime();
-					this.mediaWriter = getMedia();
-					recordBefore = true;
-				}
-				if (isSaving(recordTime) == true) {
-					BufferedImage screen = recordMatToBufferedImage(processMat);
-					BufferedImage bgrScreen = convertToType(screen, 5);
-					this.mediaWriter.encodeVideo(0, bgrScreen, System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
-				}
-				if (recordBefore == true && isSaving(recordTime) == false) {
-					/*
-					 * DateFormat df = new
-					 * SimpleDateFormat("MM_dd_yyyy_HH_mm_ss"); String videoName
-					 * = df.format(new Date()); System.out.println(
-					 * "stop record " + videoName); recordServer.stop = true;
-					 */
-					this.mediaWriter.close();
-					this.mediaWriter.flush();
-					this.mediaWriter = null;
-					recordTime = null;
-					recordBefore = false;
+						System.out.println("start record");
+						this.startTime = System.nanoTime();
+						this.mediaWriter = getMedia();
+						recordBefore = true;
+					}
+					if (isSaving(recordTime) == true) {
+						BufferedImage screen = recordMatToBufferedImage(processMat);
+						BufferedImage bgrScreen = convertToType(screen, 5);
+						this.mediaWriter.encodeVideo(0, bgrScreen, System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+					}
+					if (recordBefore == true && isSaving(recordTime) == false) {
+						/*
+						 * DateFormat df = new
+						 * SimpleDateFormat("MM_dd_yyyy_HH_mm_ss"); String
+						 * videoName = df.format(new Date());
+						 * System.out.println( "stop record " + videoName);
+						 * recordServer.stop = true;
+						 */
+						this.mediaWriter.close();
+						this.mediaWriter.flush();
+						this.mediaWriter = null;
+						recordTime = null;
+						recordBefore = false;
 
-					Camera camera = cameraRepo.findByCameraid(cameraId);
-					String result = "http://localhost:8080/videos/" + this.videoName;
-					Video video = new Video();
-					video.setCamera(camera);
-					video.setDate(new Date());
-					video.setVideoUrl(result);
-					videoRepo.save(video);
-					System.out.println("stop record");
-				}
+						String result = "http://localhost:8080/videos/" + this.videoName;
+						Video video = new Video();
+						video.setCamera(camera);
+						video.setDate(new Date());
+						video.setVideoUrl(result);
+						videoRepo.save(video);
+						System.out.println("stop record");
+					}
 
+				}
 				try {
 
 					int image_length = Mat2bufferedByte(processMat);
@@ -401,74 +392,33 @@ public class Server2 extends JFrame implements Runnable {
 					// update GUI
 					label.setText("Send frame #" + imagenb);
 				} catch (Exception ex) {
-					System.exit(0);
+					ex.printStackTrace();
 				}
 
+				try {
+
+					Thread.sleep(20);
+				} catch (InterruptedException ex) {
+					// do stuff
+				}
 			}
 
 			// mediaWriter.close();
 
-		} catch (
-
-		Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	// private void faceDetector(Mat frame) {
-	//
-	// CascadeClassifier faceDetector = new
-	// CascadeClassifier("D:/DownLoad/haarcascade_frontalface_alt.xml");
-	//
-	// MatOfRect faceDetections = new MatOfRect();
-	// faceDetector.detectMultiScale(frame, faceDetections);
-	//
-	// System.out.println(String.format("Detected %s faces",
-	// faceDetections.toArray().length));
-	// if (faceDetections.toArray().length >= 1) {
-	// this.captureTime = new Date();
-	// for (Rect rect : faceDetections.toArray()) {
-	// Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x +
-	// rect.width, rect.y + rect.height),
-	// new Scalar(0, 255, 0));
-	// }
-	// DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
-	// String imageName = cameraId.toString() + "_" + df.format(new Date()) +
-	// ".png";
-	// String fileName =
-	// "C:/Users/BinhHoc/Documents/GitHub/CAMERA-SERVER/src/main/webapp/resources/images/"
-	// + imageName ;
-	// System.out.println(String.format("Writing %s", fileName));
-	// Highgui.imwrite(fileName, frame);
-	// Camera camera = cameraRepo.findByCameraid(cameraId);
-	// Image image = new Image();
-	// image.setCamera(camera);
-	// image.setDate(new Date());
-	// String result = "http://localhost:8080/images/" + imageName ;
-	// image.setImageUrl(result);
-	// imageRepo.save(image);
-	// } else {
-	// return;
-	// }
-	//
-	// }
-
-//	private boolean isCapture() {
-//		if (this.captureTime == null) {
-//			return true;
-//		}
-//		Date d2 = new Date();
-//		long seconds = (d2.getTime() - this.captureTime.getTime()) / 1000;
-//		// System.out.println(" diff time = " + seconds);
-//		if (seconds > 10) {
-//
-//			return true;
-//		} else {
-//			return false;
-//		}
-//
-//	}
+	private void faceDetector(Mat frame) {
+		FaceDetector detector = new FaceDetector();
+		detector.frame = frame;
+		detector.cameraId = cameraId;
+		detector.cameraRepo = cameraRepo;
+		detector.imageRepo = imageRepo;
+		detector.start();
+	}
 
 	private boolean isSaving(Date recordStart) {
 		if (recordStart == null) {
@@ -551,7 +501,5 @@ public class Server2 extends JFrame implements Runnable {
 			thread.start();
 		}
 	}
-	
-	
-	
+
 }

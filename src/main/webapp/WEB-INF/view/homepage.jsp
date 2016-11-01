@@ -81,11 +81,11 @@
 										<button id="${camera.cameraId}" type="button"
 											onclick="capture(this.id)" class="capture">Capture</button>
 										<input type="text" id="${camera.cameraId}with"
-											value="${camera.objectWith}" type="button" class="col-sm-2 cac">
+											value="${camera.objectWith}" type="button" class="col-sm-3 cac">
 										<input type="text" id="${camera.cameraId}height"
-											value="${camera.objectHeight}" class="col-sm-2 cac">
+											value="${camera.objectHeight}" class="col-sm-3 cac">
 										<button id="${camera.cameraId}" onclick="setSecu(this.id)"
-											type="button" class="cac">Play</button>
+											type="button" class="cac">setting</button>
 										<!-- <button class="record">Record</button> -->
 									</div>
 								</div>
@@ -107,12 +107,12 @@
 										<button id="${camera.cameraId}" type="button"
 											onclick="capture(this.id)" class="capture">Capture</button>
 										<input type="text" id="${camera.cameraId}with"
-											value="${camera.objectWith}" class="col-sm-2 cac"
+											value="${camera.objectWith}" class="col-sm-3 cac"
 											placeholder="with"> <input type="text"
 											id="${camera.cameraId}height" value="${camera.objectHeight}"
-											class="col-sm-2 cac" placeholder="height">
+											class="col-sm-3 cac" placeholder="height">
 										<button id="${camera.cameraId}" onclick="setSecu(this.id)"
-											type="button" class="cac">Play</button>
+											type="button" class="cac">setting</button>
 										<!-- <button class="record">Record</button> -->
 									</div>
 								</div>
