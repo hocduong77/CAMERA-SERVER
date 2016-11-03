@@ -25,6 +25,17 @@ public class Image {
 	@JoinColumn(name = "cameraid", nullable = false)
 	private Camera camera;
 
+	private Integer notificationId;
+	
+	
+	public Integer getNotificationId() {
+		return notificationId;
+	}
+
+	public void setNotificationId(Integer notificationId) {
+		this.notificationId = notificationId;
+	}
+
 	public Long getImageid() {
 		return imageid;
 	}

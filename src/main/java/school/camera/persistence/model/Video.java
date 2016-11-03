@@ -2,6 +2,7 @@ package school.camera.persistence.model;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -9,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 
 @Entity
 public class Video {
@@ -56,4 +58,17 @@ public class Video {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "cameraid", nullable = false)
 	private Camera camera;
+
+	private Integer notificationId;
+
+	public Integer getNotificationId() {
+		return notificationId;
+	}
+
+	public void setNotificationId(Integer notificationId) {
+		this.notificationId = notificationId;
+	}
+	
+	
+
 }

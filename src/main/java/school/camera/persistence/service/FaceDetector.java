@@ -25,38 +25,41 @@ public class FaceDetector implements Runnable {
 	public Long cameraId;
 	public Thread thread;
 	public Mat frame;
+	public Integer notificationId;
 
 	private void faceDetector() {
+		synchronized (this) {
+			System.out.println("detecting face");
+			CascadeClassifier faceDetector = new CascadeClassifier("D:/DownLoad/haarcascade_frontalface_alt.xml");
 
-		CascadeClassifier faceDetector = new CascadeClassifier("D:/DownLoad/haarcascade_frontalface_alt.xml");
+			MatOfRect faceDetections = new MatOfRect();
+			faceDetector.detectMultiScale(frame, faceDetections);
 
-		MatOfRect faceDetections = new MatOfRect();
-		faceDetector.detectMultiScale(frame, faceDetections);
-
-		if (faceDetections.toArray().length >= 1) {
-			// this.captureTime = new Date();
-			for (Rect rect : faceDetections.toArray()) {
-				Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
-						new Scalar(0, 255, 0));
+			if (faceDetections.toArray().length >= 1) {
+				// this.captureTime = new Date();
+				for (Rect rect : faceDetections.toArray()) {
+					Core.rectangle(frame, new Point(rect.x, rect.y),
+							new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
+				}
+				DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
+				String imageName = cameraId.toString() + "_" + df.format(new Date()) + ".png";
+				String fileName = "C:/Users/BinhHoc/Documents/GitHub/CAMERA-SERVER/src/main/webapp/resources/images/"
+						+ imageName;
+				System.out.println(String.format("Writing %s", fileName));
+				Highgui.imwrite(fileName, frame);
+				Camera camera = cameraRepo.findByCameraid(cameraId);
+				Image image = new Image();
+				image.setCamera(camera);
+				image.setDate(new Date());
+				String result = "http://localhost:8080/images/" + imageName;
+				image.setImageUrl(result);
+				image.setNotificationId(this.notificationId);
+				imageRepo.save(image);
+				System.out.println(String.format("save Detected %s faces", faceDetections.toArray().length));
+			} else {
+				return;
 			}
-			DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
-			String imageName = cameraId.toString() + "_" + df.format(new Date()) + ".png";
-			String fileName = "C:/Users/BinhHoc/Documents/GitHub/CAMERA-SERVER/src/main/webapp/resources/images/"
-					+ imageName;
-			System.out.println(String.format("Writing %s", fileName));
-			Highgui.imwrite(fileName, frame);
-			Camera camera = cameraRepo.findByCameraid(cameraId);
-			Image image = new Image();
-			image.setCamera(camera);
-			image.setDate(new Date());
-			String result = "http://localhost:8080/images/" + imageName;
-			image.setImageUrl(result);
-			imageRepo.save(image);
-			System.out.println(String.format("save Detected %s faces", faceDetections.toArray().length));
-		} else {
-			return;
 		}
-
 	}
 
 	@Override

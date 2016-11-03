@@ -47,8 +47,10 @@ import com.xuggle.xuggler.ICodec;
 
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IImageRepo;
+import school.camera.persistence.dao.INotificationRepo;
 import school.camera.persistence.dao.IVideoRepo;
 import school.camera.persistence.model.Camera;
+import school.camera.persistence.model.Notification;
 import school.camera.persistence.model.Video;
 
 @SuppressWarnings({ "checkstyle:magicnumber", "PMD.LawOfDemeter", "PMD.AvoidLiteralsInIfCondition",
@@ -61,22 +63,15 @@ public class Server2 extends JFrame implements Runnable {
 
 	public CameraRepo cameraRepo;
 	public IImageRepo imageRepo;
+	public INotificationRepo notificationRepo;
 	public Thread thread;
+	private int notificationId;
 	private RecordServer recordServer;
 
-	ExecutorService executor = Executors.newFixedThreadPool(5);// creating a
+	ExecutorService executor = Executors.newFixedThreadPool(1000);// creating a
 																// pool of 5
 																// threads
 
-	// opencv
-	/**
-	 * Logger.
-	 */
-	// Logger is not a constant
-	// @SuppressWarnings({ "checkstyle:constantname",
-	// "PMD.VariableNamingConventions" })
-	// private static final Logger logger =
-	// Logger.getLogger(human.class.getName());
 	/* Load the OpenCV system library */
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -245,7 +240,7 @@ public class Server2 extends JFrame implements Runnable {
 			final VideoCapture videoCapture = new VideoCapture(getUrl());
 			videoCapture.read(mat);
 			Mat resizeMat = new Mat();
-			Size sz = new Size(480, 350);
+			Size sz = new Size(480, 340);
 			Imgproc.resize(mat, resizeMat, sz);
 
 			Size frameSize = new Size(resizeMat.width(), resizeMat.height());
@@ -258,7 +253,7 @@ public class Server2 extends JFrame implements Runnable {
 			final Point rectPoint1 = new Point();
 			final Point rectPoint2 = new Point();
 			final Scalar rectColor = new Scalar(0, 255, 0);
-			final Size kSize = new Size(8, 8);
+			final Size kSize = new Size(9, 9);
 			final double totalPixels = frameSize.area();
 			double motionPercent = 0.0;
 
@@ -274,13 +269,16 @@ public class Server2 extends JFrame implements Runnable {
 			RTPsocket = new DatagramSocket();
 			boolean recordBefore = false;
 			Camera camera = cameraRepo.findByCameraid(cameraId);
+			Size size = new Size(480, 340);
+			Mat processMat = new Mat();
+			Double motion;
 			while (videoCapture.read(mat)) {
-				Mat processMat = new Mat();
-				Size size = new Size(480, 350);
+				// Mat processMat = new Mat();
 				Imgproc.resize(mat, processMat, size);
 				if (camera.isSecurity()) {
 					// Generate work image by blurring
-					Imgproc.blur(processMat, workImg, kSize);
+					Imgproc.GaussianBlur(processMat, workImg, new Size(3, 3), 0);
+					// Imgproc.blur(processMat, workImg, kSize);
 					// Generate moving average image if needed
 					if (movingAvgImg == null) {
 						movingAvgImg = new Mat();
@@ -304,15 +302,25 @@ public class Server2 extends JFrame implements Runnable {
 					// more
 					// than
 					// 25%
-					// if (motionPercent > 50.0) {
-					workImg.convertTo(movingAvgImg, CvType.CV_32F);
-					// }
-					final List<Rect> movementLocations = contours(gray);
+
+					motion = 100.0 * (objectHeight * objectWith) / (480 * 350);
+					List<Rect> movementLocations = new ArrayList<Rect>();
+					if (motionPercent > 25) {
+						workImg.convertTo(movingAvgImg, CvType.CV_32F);
+
+					} else if (motionPercent > motion) {
+						// if motion percent smaller than 25 then bigger than
+						// motion setuped.
+						movementLocations = contours(gray);
+					}
+
+					// final List<Rect> movementLocations = contours(gray);
 					// Threshold trigger motion
 					// if (motionPercent > 5) {
 					isDetected = false;
+					// System.out.println("motionPercent motion" + motionPercent
+					// + " / " + movementLocations.size());
 					for (final Rect rect : movementLocations) {
-
 						if (rect.height > objectHeight && rect.width > objectWith) {
 							isDetected = true;
 							rectPoint1.x = rect.x;
@@ -326,10 +334,14 @@ public class Server2 extends JFrame implements Runnable {
 					}
 					if (isDetected) {
 						recordTime = new Date();
-						faceDetector(mat);
+						if (isfaceDetector(this.captureTime)) {
+							faceDetector(mat);
+							this.captureTime = new Date();
+						}
+						// faceDetector(mat);
 					}
 					if (isDetected == true && recordBefore == false) {
-
+						this.notificationId = createNotification();
 						System.out.println("start record");
 						this.startTime = System.nanoTime();
 						this.mediaWriter = getMedia();
@@ -341,13 +353,6 @@ public class Server2 extends JFrame implements Runnable {
 						this.mediaWriter.encodeVideo(0, bgrScreen, System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
 					}
 					if (recordBefore == true && isSaving(recordTime) == false) {
-						/*
-						 * DateFormat df = new
-						 * SimpleDateFormat("MM_dd_yyyy_HH_mm_ss"); String
-						 * videoName = df.format(new Date());
-						 * System.out.println( "stop record " + videoName);
-						 * recordServer.stop = true;
-						 */
 						this.mediaWriter.close();
 						this.mediaWriter.flush();
 						this.mediaWriter = null;
@@ -355,11 +360,8 @@ public class Server2 extends JFrame implements Runnable {
 						recordBefore = false;
 
 						String result = "http://localhost:8080/videos/" + this.videoName;
-						Video video = new Video();
-						video.setCamera(camera);
-						video.setDate(new Date());
-						video.setVideoUrl(result);
-						videoRepo.save(video);
+						saveVideo(result, camera);
+
 						System.out.println("stop record");
 					}
 
@@ -395,12 +397,12 @@ public class Server2 extends JFrame implements Runnable {
 					ex.printStackTrace();
 				}
 
-				try {
-
-					Thread.sleep(20);
-				} catch (InterruptedException ex) {
-					// do stuff
-				}
+				// try {
+				//
+				// Thread.sleep(40);
+				// } catch (InterruptedException ex) {
+				// // do stuff
+				// }
 			}
 
 			// mediaWriter.close();
@@ -411,15 +413,47 @@ public class Server2 extends JFrame implements Runnable {
 
 	}
 
+	private void saveVideo(String fileName, Camera camera) {
+		Video video = new Video();
+		video.setCamera(camera);
+		video.setDate(new Date());
+		video.setVideoUrl(fileName);
+		video.setNotificationId(this.notificationId);
+		videoRepo.save(video);
+	}
+
+	 private int createNotification() {
+	 Notification notification = new Notification();
+	 notification.setStartTime(new Date());
+	 notificationRepo.save(notification);
+	 return notification.getId();
+	 }
+
 	private void faceDetector(Mat frame) {
 		FaceDetector detector = new FaceDetector();
 		detector.frame = frame;
 		detector.cameraId = cameraId;
 		detector.cameraRepo = cameraRepo;
 		detector.imageRepo = imageRepo;
-		detector.start();
+		detector.notificationId = this.notificationId;
+		executor.execute(detector);
+		//detector.start();
 	}
 
+	private boolean isfaceDetector(Date lastdetector) {
+		if (lastdetector == null) {
+			return true;
+		}
+		Date d2 = new Date();
+		long seconds = (d2.getTime() - lastdetector.getTime()) / 1000;
+		if (seconds > 1) {
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+	
 	private boolean isSaving(Date recordStart) {
 		if (recordStart == null) {
 			// System.out.println("recordStart = null");

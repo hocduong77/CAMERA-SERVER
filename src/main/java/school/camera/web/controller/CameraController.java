@@ -32,6 +32,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IImageRepo;
+import school.camera.persistence.dao.INotificationRepo;
 import school.camera.persistence.dao.IVideoRepo;
 import school.camera.persistence.dao.ScheduleRepo;
 import school.camera.persistence.dao.UserRepository;
@@ -61,11 +62,12 @@ public class CameraController {
 
 	@Autowired
 	private ICameraService cameraService;
-	
+
 	@Autowired
 	private IVideoRepo videoRepo;
 
-	
+	@Autowired
+	private INotificationRepo notificationRepo;
 	@Autowired
 	private QuartzConfiguration quart;
 	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -403,23 +405,25 @@ public class CameraController {
 		socket.close();
 		return port;
 	}
-	
+
 	private int startStream(Camera camera) throws IOException {
-		 Server2 process = streamList.get(camera.getCameraid());
-		 if (null != process) {
-		 return camera.getPort();
-		 }
-		
+		Server2 process = streamList.get(camera.getCameraid());
+		if (null != process) {
+			return camera.getPort();
+		}
+
 		Server2 streamingServer = new Server2();
 		streamingServer.setUrl(camera.getCameraUrl());
 		streamingServer.setRTP_dest_port(camera.getPort());
-		
+
 		streamingServer.cameraId = camera.getCameraid();
 		streamingServer.objectWith = camera.getObjectWith();
 		streamingServer.objectHeight = camera.getObjectHeight();
 		streamingServer.cameraRepo = cameraRepo;
 		streamingServer.videoRepo = videoRepo;
 		streamingServer.imageRepo = imageRepo;
+		streamingServer.notificationRepo = notificationRepo;
+		
 		streamingServer.start();
 		streamList.put(camera.getCameraid(), streamingServer);
 		/*

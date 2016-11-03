@@ -54,8 +54,6 @@ public class Camera {
 	@OneToOne(mappedBy = "camera", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private CamearSchedule schedule;
 	
-	
-
 	public double getObjectWith() {
 		return objectWith;
 	}
