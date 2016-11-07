@@ -1,19 +1,20 @@
 package school.camera.persistence.service;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+import java.io.OutputStreamWriter;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,9 +23,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.Deflater;
+import java.util.zip.GZIPOutputStream;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.Timer;
 
@@ -57,7 +59,7 @@ import school.camera.persistence.model.Video;
 		"PMD.AvoidInstantiatingObjectsInLoops", "PMD.AvoidUsingNativeCode", "PMD.AvoidFinalLocalVariable",
 		"PMD.CommentSize", "PMD.AvoidPrintStackTrace", "PMD.UseProperClassLoader", "PMD.AvoidPrefixingMethodParameters",
 		"PMD.DataflowAnomalyAnalysis" })
-public class Server2 extends JFrame implements Runnable {
+public class Server2 implements Runnable {
 
 	public IVideoRepo videoRepo;
 
@@ -67,10 +69,10 @@ public class Server2 extends JFrame implements Runnable {
 	public Thread thread;
 	private int notificationId;
 	private RecordServer recordServer;
-
+	public ServerSocket listener;
 	ExecutorService executor = Executors.newFixedThreadPool(1000);// creating a
-																// pool of 5
-																// threads
+																	// pool of 5
+																	// threads
 
 	/* Load the OpenCV system library */
 	static {
@@ -115,10 +117,10 @@ public class Server2 extends JFrame implements Runnable {
 
 	// RTP variables:
 	// ----------------
-	DatagramSocket RTPsocket; // socket to be used to send and receive
-								// UDP
+	// DatagramSocket RTPsocket; // socket to be used to send and receive
+	// UDP
 	// packets
-	DatagramPacket senddp; // UDP packet containing the video frames
+	// DatagramPacket senddp; // UDP packet containing the video frames
 
 	InetAddress ClientIPAddr; // Client IP address
 	int RTP_dest_port = 0; // destination port for RTP packets (given by
@@ -186,7 +188,7 @@ public class Server2 extends JFrame implements Runnable {
 	public Server2() {
 
 		// init Frame
-		super("Server");
+		// super("Server");
 		//
 		// // init Timer
 		// timer = new Timer(FRAME_PERIOD, this);
@@ -197,17 +199,17 @@ public class Server2 extends JFrame implements Runnable {
 		buf = new byte[99000];
 
 		// Handler to close the main window
-		addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				// stop the timer and exit
-				timer.stop();
-				System.exit(0);
-			}
-		});
+		// addWindowListener(new WindowAdapter() {
+		// public void windowClosing(WindowEvent e) {
+		// // stop the timer and exit
+		// timer.stop();
+		// System.exit(0);
+		// }
+		// });
 
 		// GUI:
 		label = new JLabel("Send frame #        ", JLabel.CENTER);
-		getContentPane().add(label, BorderLayout.CENTER);
+		// getContentPane().add(label, BorderLayout.CENTER);
 	}
 
 	private IMediaWriter getMedia() {
@@ -256,22 +258,15 @@ public class Server2 extends JFrame implements Runnable {
 			final Size kSize = new Size(9, 9);
 			final double totalPixels = frameSize.area();
 			double motionPercent = 0.0;
-
-			// create a Server object
-			// Server2 theServer = new Server2();
-
-			// show GUI:
-			pack();
-			setVisible(true);
-
-			// Get Client IP address
-			ClientIPAddr = InetAddress.getByName("localhost");
-			RTPsocket = new DatagramSocket();
 			boolean recordBefore = false;
 			Camera camera = cameraRepo.findByCameraid(cameraId);
 			Size size = new Size(480, 340);
 			Mat processMat = new Mat();
 			Double motion;
+
+			Socket socket = listener.accept();
+			System.out.println("accept");
+			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			while (videoCapture.read(mat)) {
 				// Mat processMat = new Mat();
 				Imgproc.resize(mat, processMat, size);
@@ -388,29 +383,40 @@ public class Server2 extends JFrame implements Runnable {
 					if (packet_bits.length > 65507) {
 						continue;
 					}
-					senddp = new DatagramPacket(packet_bits, packet_length, ClientIPAddr, getRTP_dest_port());
+					// senddp = new DatagramPacket(packet_bits, packet_length,
+					// ClientIPAddr, getRTP_dest_port());
 
-					RTPsocket.send(senddp);
+					// RTPsocket.send(senddp);
+
+					out.writeInt(packet_length); // write length of the message
+					out.write(packet_bits); // write the message
+					compress(packet_bits);
 					// update GUI
 					label.setText("Send frame #" + imagenb);
 				} catch (Exception ex) {
 					ex.printStackTrace();
+					socket.close();
+					return;
 				}
 
-				// try {
-				//
-				// Thread.sleep(40);
-				// } catch (InterruptedException ex) {
-				// // do stuff
-				// }
 			}
-
-			// mediaWriter.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
+	}
+
+	public byte[] compress(byte[] data) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		GZIPOutputStream gzip = new GZIPOutputStream(bos);
+		OutputStreamWriter osw = new OutputStreamWriter(gzip, StandardCharsets.UTF_8);
+		osw.write(data.toString());
+		osw.close();
+		System.out.println();
+		System.out.println("Original: " + data.length);
+		System.out.println("Compressed: " + bos.toByteArray().length);
+		return bos.toByteArray();
 	}
 
 	private void saveVideo(String fileName, Camera camera) {
@@ -422,12 +428,12 @@ public class Server2 extends JFrame implements Runnable {
 		videoRepo.save(video);
 	}
 
-	 private int createNotification() {
-	 Notification notification = new Notification();
-	 notification.setStartTime(new Date());
-	 notificationRepo.save(notification);
-	 return notification.getId();
-	 }
+	private int createNotification() {
+		Notification notification = new Notification();
+		notification.setStartTime(new Date());
+		notificationRepo.save(notification);
+		return notification.getId();
+	}
 
 	private void faceDetector(Mat frame) {
 		FaceDetector detector = new FaceDetector();
@@ -437,7 +443,7 @@ public class Server2 extends JFrame implements Runnable {
 		detector.imageRepo = imageRepo;
 		detector.notificationId = this.notificationId;
 		executor.execute(detector);
-		//detector.start();
+		// detector.start();
 	}
 
 	private boolean isfaceDetector(Date lastdetector) {
@@ -453,7 +459,7 @@ public class Server2 extends JFrame implements Runnable {
 		}
 
 	}
-	
+
 	private boolean isSaving(Date recordStart) {
 		if (recordStart == null) {
 			// System.out.println("recordStart = null");

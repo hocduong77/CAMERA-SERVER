@@ -75,6 +75,7 @@ public class CameraController {
 	private static boolean isStream = true;
 
 	private static HashMap<Long, Server2> streamList = new HashMap<Long, Server2>();
+	private static HashMap<Long, ServerSocket> listenerList = new HashMap<Long, ServerSocket>();
 
 	public CameraController() {
 
@@ -119,12 +120,6 @@ public class CameraController {
 			}
 
 		}
-		/*
-		 * if (isStream == true) { try { Thread.sleep(15000); } catch
-		 * (InterruptedException e) { // TODO Auto-generated catch block
-		 * e.printStackTrace(); } }
-		 */
-
 		return new ModelAndView("homepage", "cameras", cameraDtos);
 	}
 
@@ -407,15 +402,16 @@ public class CameraController {
 	}
 
 	private int startStream(Camera camera) throws IOException {
-		Server2 process = streamList.get(camera.getCameraid());
-		if (null != process) {
-			return camera.getPort();
+		ServerSocket listener = listenerList.get(camera.getCameraid());
+		if (null == listener) {
+			listener = new ServerSocket(camera.getPort());
+			listenerList.put(camera.getCameraid(), listener);
 		}
 
 		Server2 streamingServer = new Server2();
 		streamingServer.setUrl(camera.getCameraUrl());
 		streamingServer.setRTP_dest_port(camera.getPort());
-
+		streamingServer.listener = listener;
 		streamingServer.cameraId = camera.getCameraid();
 		streamingServer.objectWith = camera.getObjectWith();
 		streamingServer.objectHeight = camera.getObjectHeight();
@@ -423,22 +419,9 @@ public class CameraController {
 		streamingServer.videoRepo = videoRepo;
 		streamingServer.imageRepo = imageRepo;
 		streamingServer.notificationRepo = notificationRepo;
-		
+
 		streamingServer.start();
 		streamList.put(camera.getCameraid(), streamingServer);
-		/*
-		 * int port = getFreePort(); String cmd = "vlc.exe -I dummy " +
-		 * camera.getCameraUrl() +
-		 * " :network-caching=1000 :sout=#transcode{vcodec=theo,vb=1600,scale=1,acodec=none}:http{mux=ogg,dst=:"
-		 * + Integer.toString(port) +
-		 * "/stream} :no-sout-rtp-sap :no-sout-standard-sap :sout-keep vlc://quit"
-		 * ; LOGGER.info("cmd ==== {}", cmd); Runtime runtime =
-		 * Runtime.getRuntime(); streamList.put(camera.getCameraid(),
-		 * runtime.exec(cmd)); LOGGER.info("port auto gnerate {}", port); String
-		 * streamUrl = "http://localhost:" + Integer.toString(port) + "/stream";
-		 * camera.setStreamUrl(streamUrl); cameraRepo.save(camera);
-		 */
-		// isStream = true;
 		return camera.getPort();
 	}
 

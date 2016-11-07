@@ -6,29 +6,29 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 
 import javax.swing.Timer;
 
 public class camera extends Applet {
 
+	// RTP variables:
+	// ----------------
+	DatagramPacket rcvdp; // UDP packet received from the server
+	DatagramSocket RTPsocket; // socket to be used to send and receive
+								// UDP
 
-
-	Socket RTSPsocket; // socket used to send/receive RTSP messages
-	DataInputStream  RTSPBufferedReader;
-	BufferedWriter RTSPBufferedWriter;
-	
 	Timer timer; // timer used to receive data from the UDP socket
 	byte[] buf; // buffer used to store data received from the server
 	Image image;
 	// RTSP variables
 	// ----------------
+
 
 	final String CRLF = "\r\n";
 
@@ -56,34 +56,23 @@ public class camera extends Applet {
 		// g.drawImage(image, 0, 0, this);
 		g.drawImage(paintImage, 0, 0, this);
 	}
-
 	public static void main(String[] args) {
 		new camera();
 	}
-
 	@Override
 	public void start() {
 		// Init non-blocking RTPsocket that will be used to receive data
 		try {
-			
-			RTSPsocket = new Socket("localhost", Integer.parseInt(getParameter("rtpPort")));
-			//RTSPsocket = new Socket("localhost", 4499);
-			// Set input and output stream filters:
-			RTSPBufferedReader = new DataInputStream (RTSPsocket.getInputStream());
+			RTPsocket = new DatagramSocket( Integer.parseInt(getParameter("rtpPort")));
+			// set TimeOut value of the socket to 5msec.
+			RTPsocket.setSoTimeout(5000);
+			// set TimeOut value of the socket to 5msec.
 
 		} catch (SocketException se) {
 			System.out.println("Socket exception: " + se);
 			System.exit(0);
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
+		System.out.println("New RTSP state: PLAYING");
 		// start the timer
 		timer.start();
 
@@ -92,21 +81,23 @@ public class camera extends Applet {
 	class timerListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 
+			// Construct a DatagramPacket to receive data from the UDP socket
 
+			rcvdp = new DatagramPacket(buf, buf.length);
 
 			try {
 				// receive the DP from the socket:
-				int length = RTSPBufferedReader.readInt();  
-				byte[] message = new byte[length];// read length of incoming message
-				if(length>0) {				    
-				    RTSPBufferedReader.readFully(message, 0, message.length); // read the message
-				}
-				
+				RTPsocket.receive(rcvdp);
 
 				// create an RTPpacket object from the DP
-				RTPpacket rtp_packet = new RTPpacket(message,length);
+				RTPpacket rtp_packet = new RTPpacket(rcvdp.getData(), rcvdp.getLength());
 
-				
+				// print important header fields of the RTP packet received:
+				System.out.println("Got RTP packet with SeqNum # " + rtp_packet.getsequencenumber() + " TimeStamp "
+						+ rtp_packet.gettimestamp() + " ms, of type " + rtp_packet.getpayloadtype());
+
+				// print header bitstream:
+				rtp_packet.printheader();
 
 				// get the payload bitstream from the RTPpacket object
 				int payload_length = rtp_packet.getpayload_length();
@@ -121,7 +112,7 @@ public class camera extends Applet {
 
 				repaint();
 			} catch (InterruptedIOException iioe) {
-				 System.out.println("Nothing to read");
+				// System.out.println("Nothing to read");
 			} catch (IOException ioe) {
 				System.out.println("Exception caught: " + ioe);
 			}
