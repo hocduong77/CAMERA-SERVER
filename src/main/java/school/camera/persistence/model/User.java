@@ -31,7 +31,7 @@ public class User {
 
 	private boolean tokenExpired;
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
 	private Set<Camera> cameras = new HashSet<Camera>(0);
 
 	public Set<Camera> getCameras() {

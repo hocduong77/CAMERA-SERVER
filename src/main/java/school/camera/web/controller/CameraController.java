@@ -20,6 +20,7 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -65,6 +66,9 @@ public class CameraController {
 
 	@Autowired
 	private IVideoRepo videoRepo;
+
+	@Autowired
+	private JavaMailSender mailSender;
 
 	@Autowired
 	private INotificationRepo notificationRepo;
@@ -419,7 +423,7 @@ public class CameraController {
 		streamingServer.videoRepo = videoRepo;
 		streamingServer.imageRepo = imageRepo;
 		streamingServer.notificationRepo = notificationRepo;
-
+		streamingServer.mailSender = mailSender;
 		streamingServer.start();
 		streamList.put(camera.getCameraid(), streamingServer);
 		return camera.getPort();

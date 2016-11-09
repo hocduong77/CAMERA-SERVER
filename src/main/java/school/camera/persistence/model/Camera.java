@@ -41,7 +41,7 @@ public class Camera {
 	
 	private double objectHeight;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "userid", nullable = false)
 	private User user;
 	

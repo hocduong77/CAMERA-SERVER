@@ -12,4 +12,7 @@ public interface IVideoRepo extends JpaRepository<Video, Long>{
 public List<Video> findByCameraAndDateBetween(Camera camera, Date from, Date to);
 	
 	public List<Video> findByCamera(Camera camera);
+	
+	public List<Video> findByNotificationId(Integer notificationId);
+	
 }

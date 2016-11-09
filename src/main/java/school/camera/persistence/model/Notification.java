@@ -19,7 +19,7 @@ public class Notification {
 	
 	private Date startTime;
 	
-	private Date stopTime;
+	private Long cameraId;
 
 	public Integer getId() {
 		return id;
@@ -37,12 +37,12 @@ public class Notification {
 		this.startTime = startTime;
 	}
 
-	public Date getStopTime() {
-		return stopTime;
+	public Long getCameraId() {
+		return cameraId;
 	}
 
-	public void setStopTime(Date stopTime) {
-		this.stopTime = stopTime;
+	public void setCameraId(Long cameraId) {
+		this.cameraId = cameraId;
 	}
 
 	

@@ -45,19 +45,12 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
         String subject = "Registration Confirmation";
         String confirmationUrl = event.getAppUrl() + "/regitrationConfirm.html?token=" + token;
         String message = messages.getMessage("message.regSucc", null, event.getLocale());
-		// SimpleMailMessage email = new SimpleMailMessage();
-		// email.setTo(recipientAddress);
-		// email.setSubject(subject);
-		// email.setText(message + " \r\n" + "http://localhost:8080" +
-		// confirmationUrl);
-		// mailSender.send(email);
         
         try {
         	 MimeMessage mimeMessage = mailSender.createMimeMessage();
              mimeMessage.setSubject(subject);
              mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(recipientAddress));
-          // Set From: header field of the header.
-             mimeMessage.setSubject(subject);
+             // Set From: header field of the header.
              mimeMessage.setContent(message + " \r\n" + "http://localhost:8080" + confirmationUrl, "text/html");
              mailSender.send(mimeMessage);
 		} catch (Exception e) {

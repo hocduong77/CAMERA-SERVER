@@ -42,6 +42,7 @@ import org.opencv.core.Size;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import com.xuggle.mediatool.IMediaWriter;
 import com.xuggle.mediatool.ToolFactory;
@@ -69,6 +70,7 @@ public class Server2 implements Runnable {
 	public Thread thread;
 	private int notificationId;
 	private RecordServer recordServer;
+	public JavaMailSender mailSender;
 	public ServerSocket listener;
 	ExecutorService executor = Executors.newFixedThreadPool(1000);// creating a
 																	// pool of 5
@@ -356,7 +358,7 @@ public class Server2 implements Runnable {
 
 						String result = "http://localhost:8080/videos/" + this.videoName;
 						saveVideo(result, camera);
-
+						sendEmail();
 						System.out.println("stop record");
 					}
 
@@ -390,7 +392,6 @@ public class Server2 implements Runnable {
 
 					out.writeInt(packet_length); // write length of the message
 					out.write(packet_bits); // write the message
-					compress(packet_bits);
 					// update GUI
 					label.setText("Send frame #" + imagenb);
 				} catch (Exception ex) {
@@ -407,7 +408,7 @@ public class Server2 implements Runnable {
 
 	}
 
-	public byte[] compress(byte[] data) throws IOException {
+	/*public byte[] compress(byte[] data) throws IOException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		GZIPOutputStream gzip = new GZIPOutputStream(bos);
 		OutputStreamWriter osw = new OutputStreamWriter(gzip, StandardCharsets.UTF_8);
@@ -417,7 +418,7 @@ public class Server2 implements Runnable {
 		System.out.println("Original: " + data.length);
 		System.out.println("Compressed: " + bos.toByteArray().length);
 		return bos.toByteArray();
-	}
+	}*/
 
 	private void saveVideo(String fileName, Camera camera) {
 		Video video = new Video();
@@ -427,10 +428,22 @@ public class Server2 implements Runnable {
 		video.setNotificationId(this.notificationId);
 		videoRepo.save(video);
 	}
+	private void sendEmail(){
+		
+		EmailService email = new EmailService();
+		email.cameraRepo = this.cameraRepo;
+		email.notificationId = this.notificationId;
+		email.videoRepo = this.videoRepo;
+		email.imageRepo = this.imageRepo;
+		email.notificationRepo = this.notificationRepo;
+		email.mailSender = this.mailSender;
+		email.start();
+	}
 
 	private int createNotification() {
 		Notification notification = new Notification();
 		notification.setStartTime(new Date());
+		notification.setCameraId(this.cameraId);
 		notificationRepo.save(notification);
 		return notification.getId();
 	}
