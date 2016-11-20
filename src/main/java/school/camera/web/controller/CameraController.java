@@ -44,6 +44,7 @@ import school.camera.persistence.model.User;
 import school.camera.persistence.service.CameraDto;
 import school.camera.persistence.service.ICameraService;
 import school.camera.persistence.service.Server2;
+import school.camera.persistence.service.UserDto;
 import school.camera.spring.QuartzConfiguration;
 
 @Controller
@@ -111,7 +112,14 @@ public class CameraController {
 		String email = (String) session.getAttribute("email");
 		LOGGER.info("username {}", email);
 		User user = userRepo.findByEmail(email);
-		List<Camera> cameras = cameraRepo.findByUser(user);
+		// List<Camera> cameras = cameraRepo.findByUser(user);
+		List<Camera> cameras = new ArrayList<Camera>();
+		if (user.getRole().getRole() == 3) {
+			cameras = cameraRepo.findBySecurityId(user.getUserid());
+		} else {
+			cameras = cameraRepo.findByUser(user);
+		}
+
 		List<CameraDto> cameraDtos = new ArrayList<CameraDto>();
 		for (Camera camera : cameras) {
 			if (camera.isEnabled()) {
@@ -150,10 +158,23 @@ public class CameraController {
 		CameraDto cameraDto = convert(camera);
 
 		Map<Integer, String> time = getTimeInterval();
-
+		Map<Long, String> securitiy = new HashMap<Long, String>();
 		ModelAndView mav = new ModelAndView("setting", "camera", cameraDto);
 		mav.addObject("time", time);
-		// mav.addObject("hour", hour);
+		List<User> users = userRepo.findAll();
+		List<UserDto> userDtos = new ArrayList<UserDto>();
+		for (User user : users) {
+			if (user.getRole().getRole() == 3) {
+				UserDto userDto = new UserDto();
+				userDto.setEmail(user.getEmail());
+				userDto.setFirstName(user.getFirstName());
+				userDto.setLastName(user.getLastName());
+				userDtos.add(userDto);
+				securitiy.put(user.getUserid(), user.getFirstName() + " " + user.getLastName());
+			}
+		}
+
+		mav.addObject("users", securitiy);
 		return mav;
 
 	}
@@ -167,6 +188,7 @@ public class CameraController {
 		if (camera == null) {
 			return new ModelAndView("setting", "cameras", cameraDto);
 		}
+		camera.setSecurityId(cameraDto.getSecurityId());
 		camera.setSecurity(cameraDto.isSecurity());
 		if (cameraDto.isEnabled() == false) {
 			camera.setEnabled(false);
@@ -245,7 +267,21 @@ public class CameraController {
 		ModelAndView mav = new ModelAndView("setting", "camera", cameraDto);
 		mav.addObject("time", time);
 		mav.addObject("mess", success);
+		Map<Long, String> securitiy = new HashMap<Long, String>();
+		List<User> users = userRepo.findAll();
+		List<UserDto> userDtos = new ArrayList<UserDto>();
+		for (User user : users) {
+			if (user.getRole().getRole() == 3) {
+				UserDto userDto = new UserDto();
+				userDto.setEmail(user.getEmail());
+				userDto.setFirstName(user.getFirstName());
+				userDto.setLastName(user.getLastName());
+				userDtos.add(userDto);
+				securitiy.put(user.getUserid(), user.getFirstName() + " " + user.getLastName());
+			}
+		}
 
+		mav.addObject("users", securitiy);
 		return mav;
 	}
 

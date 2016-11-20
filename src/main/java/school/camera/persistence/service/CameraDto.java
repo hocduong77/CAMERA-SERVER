@@ -38,13 +38,14 @@ public class CameraDto {
 
 	private String recordTo;
 
+	private Long securityId;
+
 	private int port;
 
 	private double objectWith;
-	
+
 	private double objectHeight;
-	
-	
+
 	public double getObjectWith() {
 		return objectWith;
 	}
@@ -211,6 +212,14 @@ public class CameraDto {
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+	}
+
+	public Long getSecurityId() {
+		return securityId;
+	}
+
+	public void setSecurityId(Long securityId) {
+		this.securityId = securityId;
 	}
 
 }

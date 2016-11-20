@@ -39,7 +39,22 @@ public class UserService implements IUserService {
         user.setRole(new Role(Integer.valueOf(1), user));
         return repository.save(user);
     }
-
+    
+    @Override
+    public User registerNewSecurityAccount(UserDto accountDto) throws EmailExistsException {
+        if (emailExist(accountDto.getEmail())) {
+            throw new EmailExistsException("There is an account with that email adress: " + accountDto.getEmail());
+        }
+        User user = new User();
+        user.setFirstName(accountDto.getFirstName());
+        user.setLastName(accountDto.getLastName());
+        String hashedPassword = hashGenerator.getHashedPassword(accountDto.getPassword());
+        user.setPassword(hashedPassword);
+        user.setEnabled(true);
+        user.setEmail(accountDto.getEmail());
+        user.setRole(new Role(Integer.valueOf(3), user));
+        return repository.save(user);
+    }
     @Override
     public User getUser(String verificationToken) {
         User user = tokenRepository.findByToken(verificationToken).getUser();

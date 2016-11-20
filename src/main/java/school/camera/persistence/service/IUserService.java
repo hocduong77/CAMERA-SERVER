@@ -6,16 +6,18 @@ import school.camera.validation.service.EmailExistsException;
 
 public interface IUserService {
 
-    User registerNewUserAccount(UserDto accountDto) throws EmailExistsException;
+	User registerNewUserAccount(UserDto accountDto) throws EmailExistsException;
 
-    User getUser(String verificationToken);
+	User registerNewSecurityAccount(UserDto accountDto) throws EmailExistsException;
 
-    void saveRegisteredUser(User user);
+	User getUser(String verificationToken);
 
-    void deleteUser(User user);
+	void saveRegisteredUser(User user);
 
-    void createVerificationTokenForUser(User user, String token);
+	void deleteUser(User user);
 
-    VerificationToken getVerificationToken(String VerificationToken);
+	void createVerificationTokenForUser(User user, String token);
+
+	VerificationToken getVerificationToken(String VerificationToken);
 
 }

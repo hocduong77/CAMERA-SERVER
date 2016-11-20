@@ -7,8 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import school.camera.persistence.model.Camera;
 import school.camera.persistence.model.User;;
 
-public interface CameraRepo extends JpaRepository<Camera, Long>{
+public interface CameraRepo extends JpaRepository<Camera, Long> {
+	
+	public List<Camera> findBySecurityId(Long securityId);
+
 	public List<Camera> findByUser(User user);
+
 	public List<Camera> findByUserAndAlias(User user, String alias);
+
 	public Camera findByCameraid(Long cameraId);
 }

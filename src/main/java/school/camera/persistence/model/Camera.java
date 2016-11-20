@@ -1,6 +1,5 @@
 package school.camera.persistence.model;
 
-
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,37 +22,47 @@ public class Camera {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long cameraid;
 
+	private Long securityId;
+
 	private String cameraUrl;
 
 	private String alias;
-	
+
 	private String name;
-	
+
 	private String streamUrl;
-	
+
 	private boolean enabled;
-	
+
 	private int port;
 
 	private boolean security;
-	
+
 	private double objectWith;
-	
+
 	private double objectHeight;
-	
+
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "userid", nullable = false)
 	private User user;
-	
+
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "camera")
 	private Set<Image> image = new HashSet<Image>(0);
-	
+
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "camera")
 	private Set<Video> video = new HashSet<Video>(0);
 
 	@OneToOne(mappedBy = "camera", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private CamearSchedule schedule;
-	
+
+	public Long getSecurityId() {
+		return securityId;
+	}
+
+	public void setSecurityId(Long securityId) {
+		this.securityId = securityId;
+	}
+
 	public double getObjectWith() {
 		return objectWith;
 	}
@@ -68,7 +77,7 @@ public class Camera {
 
 	public void setObjectHeight(double objectHeight) {
 		this.objectHeight = objectHeight;
-	}	
+	}
 
 	public boolean isSecurity() {
 		return security;
@@ -165,8 +174,5 @@ public class Camera {
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
-
-	
-
 
 }

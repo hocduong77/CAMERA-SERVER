@@ -1,6 +1,8 @@
 package school.camera.web.controller;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 import javax.validation.Valid;
@@ -21,8 +23,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
+import org.w3c.dom.stylesheets.LinkStyle;
 
 import school.camera.event.OnRegistrationCompleteEvent;
+import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.User;
 import school.camera.persistence.model.VerificationToken;
 import school.camera.persistence.service.IUserService;
@@ -32,87 +36,156 @@ import school.camera.validation.service.EmailExistsException;
 @Controller
 public class RegistrationController {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    private IUserService service;
+	@Autowired
+	private IUserService service;
 
-    @Autowired
-    private MessageSource messages;
+	@Autowired
+	private UserRepository userRepo;
 
-    @Autowired
-    private JavaMailSender mailSender;
+	@Autowired
+	private MessageSource messages;
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+	@Autowired
+	private JavaMailSender mailSender;
 
-    public RegistrationController() {
+	@Autowired
+	private ApplicationEventPublisher eventPublisher;
 
-    }
-    @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String index() {
-        return "index";
-    } 
-    
-    
-    @RequestMapping(value = "/user/registration", method = RequestMethod.GET)
-    public String showRegistrationForm(WebRequest request, Model model) {
-        LOGGER.debug("Rendering registration page.");
-        UserDto accountDto = new UserDto();
-        model.addAttribute("user", accountDto);
-        return "registration";
-    }
+	public RegistrationController() {
 
-    @RequestMapping(value = "/regitrationConfirm", method = RequestMethod.GET)
-    public String confirmRegistration(WebRequest request, Model model, @RequestParam("token") String token) {
-        Locale locale = request.getLocale();
+	}
 
-        VerificationToken verificationToken = service.getVerificationToken(token);
-        if (verificationToken == null) {
-            String message = messages.getMessage("auth.message.invalidToken", null, locale);
-            model.addAttribute("message", message);
-            return "redirect:/badUser.html?lang=" + locale.getLanguage();
-        }
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public String index() {
+		return "index";
+	}
 
-        User user = verificationToken.getUser();
-        Calendar cal = Calendar.getInstance();
-        if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
-            model.addAttribute("message", messages.getMessage("auth.message.expired", null, locale));
-            return "redirect:/badUser.html?lang=" + locale.getLanguage();
-        }
+	@RequestMapping(value = "/user/registration", method = RequestMethod.GET)
+	public String showRegistrationForm(WebRequest request, Model model) {
+		LOGGER.debug("Rendering registration page.");
+		UserDto accountDto = new UserDto();
+		model.addAttribute("user", accountDto);
+		return "registration";
+	}
 
-        user.setEnabled(true);
-        service.saveRegisteredUser(user);
-        return "redirect:/login.html?lang=" + locale.getLanguage();
-    }
+	@RequestMapping(value = "/securities", method = RequestMethod.GET)
+	public String securities(WebRequest request, Model model) {
+		LOGGER.debug("Rendering securities page.");
+		List<User> users = userRepo.findAll();
+		List<UserDto> userDtos = new ArrayList<UserDto>();
+		for (User user : users) {
+			if (user.getRole().getRole() == 3) {
+				UserDto userDto = new UserDto();
+				userDto.setEmail(user.getEmail());
+				userDto.setFirstName(user.getFirstName());
+				userDto.setLastName(user.getLastName());
+				userDtos.add(userDto);
+			}
+		}
+		model.addAttribute("users", userDtos);
+		return "securities";
+	}
 
-    @RequestMapping(value = "/user/registration", method = RequestMethod.POST)
-    public ModelAndView registerUserAccount(@ModelAttribute("user") @Valid UserDto accountDto, BindingResult result, WebRequest request, Errors errors) {
-        LOGGER.debug("Registering user account with information: {}", accountDto);
-        if (result.hasErrors()) {
-            return new ModelAndView("registration", "user", accountDto);
-        }
+	@RequestMapping(value = "/console", method = RequestMethod.GET)
+	public String security(WebRequest request, Model model) {
+		LOGGER.debug("Rendering registration page.");
+		UserDto accountDto = new UserDto();
+		model.addAttribute("user", accountDto);
+		return "console";
+	}
 
-        User registered = createUserAccount(accountDto);
-        if (registered == null) {
-            result.rejectValue("email", "message.regError");
-        }
-        try {
-            String appUrl = request.getContextPath();
-            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered, request.getLocale(), appUrl));
-        } catch (Exception me) {
-            return new ModelAndView("emailError", "user", accountDto);
-        }
-        return new ModelAndView("successRegister", "user", accountDto);
-    }
+	@RequestMapping(value = "/console", method = RequestMethod.POST)
+	public ModelAndView createSecurity(@ModelAttribute("user") @Valid UserDto accountDto, BindingResult result,
+			WebRequest request, Errors errors, Model model) {
+		LOGGER.debug("Registering user account with information: {}", accountDto);
+		if (result.hasErrors()) {
+			return new ModelAndView("registration", "user", accountDto);
+		}
 
-    private User createUserAccount(UserDto accountDto) {
-        User registered = null;
-        try {
-            registered = service.registerNewUserAccount(accountDto);
-        } catch (EmailExistsException e) {
-            return null;
-        }
-        return registered;
-    }
+		User registered = createSecurityAccount(accountDto);
+		if (registered == null) {
+			result.rejectValue("email", "message.regError");
+		}
+
+		LOGGER.debug("Rendering securities page.");
+		List<User> users = userRepo.findAll();
+		List<UserDto> userDtos = new ArrayList<UserDto>();
+		for (User user : users) {
+			if (user.getRole().getRole() == 3) {
+				UserDto userDto = new UserDto();
+				userDto.setEmail(user.getEmail());
+				userDto.setFirstName(user.getFirstName());
+				userDto.setLastName(user.getLastName());
+				userDtos.add(userDto);
+			}
+		}
+		return new ModelAndView("securities", "users", userDtos);
+	}
+
+	@RequestMapping(value = "/regitrationConfirm", method = RequestMethod.GET)
+	public String confirmRegistration(WebRequest request, Model model, @RequestParam("token") String token) {
+		Locale locale = request.getLocale();
+
+		VerificationToken verificationToken = service.getVerificationToken(token);
+		if (verificationToken == null) {
+			String message = messages.getMessage("auth.message.invalidToken", null, locale);
+			model.addAttribute("message", message);
+			return "redirect:/badUser.html?lang=" + locale.getLanguage();
+		}
+
+		User user = verificationToken.getUser();
+		Calendar cal = Calendar.getInstance();
+		if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
+			model.addAttribute("message", messages.getMessage("auth.message.expired", null, locale));
+			return "redirect:/badUser.html?lang=" + locale.getLanguage();
+		}
+
+		user.setEnabled(true);
+		service.saveRegisteredUser(user);
+		return "redirect:/login.html?lang=" + locale.getLanguage();
+	}
+
+	@RequestMapping(value = "/user/registration", method = RequestMethod.POST)
+	public ModelAndView registerUserAccount(@ModelAttribute("user") @Valid UserDto accountDto, BindingResult result,
+			WebRequest request, Errors errors) {
+		LOGGER.debug("Registering user account with information: {}", accountDto);
+		if (result.hasErrors()) {
+			return new ModelAndView("registration", "user", accountDto);
+		}
+
+		User registered = createUserAccount(accountDto);
+		if (registered == null) {
+			result.rejectValue("email", "message.regError");
+		}
+		try {
+			String appUrl = request.getContextPath();
+			eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered, request.getLocale(), appUrl));
+		} catch (Exception me) {
+			return new ModelAndView("emailError", "user", accountDto);
+		}
+		return new ModelAndView("successRegister", "user", accountDto);
+	}
+
+	private User createUserAccount(UserDto accountDto) {
+		User registered = null;
+		try {
+			registered = service.registerNewUserAccount(accountDto);
+		} catch (EmailExistsException e) {
+			return null;
+		}
+		return registered;
+	}
+
+	private User createSecurityAccount(UserDto accountDto) {
+		User registered = null;
+		try {
+			registered = service.registerNewSecurityAccount(accountDto);
+		} catch (EmailExistsException e) {
+			return null;
+		}
+		return registered;
+	}
+
 }

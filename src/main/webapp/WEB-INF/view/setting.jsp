@@ -306,7 +306,13 @@
 							path="security" />
 					</div>
 				</div>
-
+				<div id="operationtimewindowenableddiv" class="form-group">
+					<label id="securitytextdiv" class="col-sm-2 control-label">Security Management:</label>
+				<div class="col-sm-4 ">
+					<form:select path="securityId" items="${users}" class="form-control">
+					</form:select>
+				</div>
+				</div>
 				<br>
 
 				<div id="operationtimewindowenableddiv" class="form-group"

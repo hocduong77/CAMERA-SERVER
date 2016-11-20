@@ -82,7 +82,12 @@ public class MediaController {
 		String email = (String) session.getAttribute("email");
 		LOGGER.info("username {}", email);
 		User user = userRepo.findByEmail(email);
-		List<Camera> cameras = cameraRepo.findByUser(user);
+		List<Camera> cameras = new ArrayList<Camera>();
+		if (user.getRole().getRole() == 3) {
+			cameras = cameraRepo.findBySecurityId(user.getUserid());
+		} else {
+			cameras = cameraRepo.findByUser(user);
+		}
 		List<String> imageUrls = new ArrayList<String>();
 		List<String> cameraAlias = new ArrayList<String>();
 		for (Camera camera : cameras) {
@@ -122,7 +127,13 @@ public class MediaController {
 		String email = (String) session.getAttribute("email");
 		LOGGER.info("username {}", email);
 		User user = userRepo.findByEmail(email);
-		List<Camera> cameraSearch = cameraRepo.findByUser(user);
+		/* List<Camera> cameraSearch = cameraRepo.findByUser(user); */
+		List<Camera> cameraSearch = new ArrayList<Camera>();
+		if (user.getRole().getRole() == 3) {
+			cameraSearch = cameraRepo.findBySecurityId(user.getUserid());
+		} else {
+			cameraSearch = cameraRepo.findByUser(user);
+		}
 		List<String> cameraAlias = new ArrayList<String>();
 		for (Camera camera : cameraSearch) {
 			cameraAlias.add(camera.getAlias());
@@ -157,7 +168,12 @@ public class MediaController {
 		String email = (String) session.getAttribute("email");
 		LOGGER.info("username {}", email);
 		User user = userRepo.findByEmail(email);
-		List<Camera> cameras = cameraRepo.findByUser(user);
+		List<Camera> cameras = new ArrayList<Camera>();
+		if (user.getRole().getRole() == 3) {
+			cameras = cameraRepo.findBySecurityId(user.getUserid());
+		} else {
+			cameras = cameraRepo.findByUser(user);
+		}
 		List<String> videoUrls = new ArrayList<String>();
 		List<String> cameraAlias = new ArrayList<String>();
 		for (Camera camera : cameras) {
@@ -198,7 +214,14 @@ public class MediaController {
 		String email = (String) session.getAttribute("email");
 		LOGGER.info("username {}", email);
 		User user = userRepo.findByEmail(email);
-		List<Camera> cameraSearch = cameraRepo.findByUser(user);
+		/* List<Camera> cameraSearch = cameraRepo.findByUser(user); */
+		List<Camera> cameraSearch = new ArrayList<Camera>();
+		if (user.getRole().getRole() == 3) {
+			cameraSearch = cameraRepo.findBySecurityId(user.getUserid());
+		} else {
+			cameraSearch = cameraRepo.findByUser(user);
+		}
+
 		List<String> cameraAlias = new ArrayList<String>();
 		for (Camera camera : cameraSearch) {
 			if (camera.isEnabled()) {

@@ -22,54 +22,59 @@ import school.camera.persistence.service.IUserService;
 @Transactional
 public class MyUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private IUserService service;
-    @Autowired
-    private MessageSource messages;
+	@Autowired
+	private UserRepository userRepository;
+	@Autowired
+	private IUserService service;
+	@Autowired
+	private MessageSource messages;
 
-    public MyUserDetailsService() {
+	public MyUserDetailsService() {
 
-    }
+	}
 
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        boolean enabled = true;
-        boolean accountNonExpired = true;
-        boolean credentialsNonExpired = true;
-        boolean accountNonLocked = true;
-        try {
-            User user = userRepository.findByEmail(email);
-            if (user == null) {
-                return new org.springframework.security.core.userdetails.User(" ", " ", enabled, true, true, true, getAuthorities(new Integer(1)));
-            }
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+		boolean enabled = true;
+		boolean accountNonExpired = true;
+		boolean credentialsNonExpired = true;
+		boolean accountNonLocked = true;
+		try {
+			User user = userRepository.findByEmail(email);
+			if (user == null) {
+				return new org.springframework.security.core.userdetails.User(" ", " ", enabled, true, true, true,
+						getAuthorities(new Integer(1)));
+			}
 
-            return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), user.isEnabled(), accountNonExpired, credentialsNonExpired, accountNonLocked, getAuthorities(user.getRole().getRole()));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+			return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
+					user.isEnabled(), accountNonExpired, credentialsNonExpired, accountNonLocked,
+					getAuthorities(user.getRole().getRole()));
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-    private Collection<? extends GrantedAuthority> getAuthorities(Integer role) {
-        List<GrantedAuthority> authList = getGrantedAuthorities(getRoles(role));
-        return authList;
-    }
+	private Collection<? extends GrantedAuthority> getAuthorities(Integer role) {
+		List<GrantedAuthority> authList = getGrantedAuthorities(getRoles(role));
+		return authList;
+	}
 
-    public List<String> getRoles(Integer role) {
-        List<String> roles = new ArrayList<String>();
-        if (role.intValue() == 2) {
-            roles.add("ROLE_ADMIN");
-        } else if (role.intValue() == 1) {
-            roles.add("ROLE_USER");
-        }
-        return roles;
-    }
+	public List<String> getRoles(Integer role) {
+		List<String> roles = new ArrayList<String>();
+		if (role.intValue() == 2) {
+			roles.add("ROLE_ADMIN");
+		} else if (role.intValue() == 1) {
+			roles.add("ROLE_USER");
+		} else if (role.intValue() == 3) {
+			roles.add("ROLE_SEC");
+		}
+		return roles;
+	}
 
-    private static List<GrantedAuthority> getGrantedAuthorities(List<String> roles) {
-        List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-        for (String role : roles) {
-            authorities.add(new SimpleGrantedAuthority(role));
-        }
-        return authorities;
-    }
+	private static List<GrantedAuthority> getGrantedAuthorities(List<String> roles) {
+		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+		for (String role : roles) {
+			authorities.add(new SimpleGrantedAuthority(role));
+		}
+		return authorities;
+	}
 }
