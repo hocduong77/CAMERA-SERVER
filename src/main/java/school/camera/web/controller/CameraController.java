@@ -460,6 +460,7 @@ public class CameraController {
 		streamingServer.imageRepo = imageRepo;
 		streamingServer.notificationRepo = notificationRepo;
 		streamingServer.mailSender = mailSender;
+		streamingServer.userRepo = userRepo;
 		streamingServer.start();
 		streamList.put(camera.getCameraid(), streamingServer);
 		return camera.getPort();

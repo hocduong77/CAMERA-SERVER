@@ -16,7 +16,9 @@ import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IImageRepo;
 import school.camera.persistence.dao.INotificationRepo;
 import school.camera.persistence.dao.IVideoRepo;
+import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.Camera;
+import school.camera.persistence.model.Image;
 import school.camera.persistence.model.Notification;
 import school.camera.persistence.model.User;
 import school.camera.persistence.model.Video;
@@ -30,29 +32,51 @@ public class EmailService implements Runnable {
 	public Integer notificationId;
 	public JavaMailSender mailSender;
 	public INotificationRepo notificationRepo;
+	public UserRepository userRepo;
 
 	@Override
 	public void run() {
 		try {
 			Notification motification = notificationRepo.findOne(notificationId);
 			Camera camera = cameraRepo.findOne(motification.getCameraId());
+			User security = null;
+			if (camera.getSecurityId() != null) {
+				security = userRepo.findOne(camera.getSecurityId());
+			}
 			List<Video> videos = videoRepo.findByNotificationId(notificationId);
+			List<Image> images = imageRepo.findByNotificationId(notificationId);
 			User user = (User) camera.getUser();
 			String userName = user.getEmail();
 			System.out.println("user email" + userName);
 			MimeMessage mimeMessage = mailSender.createMimeMessage();
 			mimeMessage.setSubject("CAMERA-SERVER");
 			mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(userName));
-			String conntent = "<video width=\"400\" controls>" + "<source src=\""  + videos.get(0).getVideoUrl()
-					+ "\" type=\"video/mp4\">" + "</video>";
-			System.out.println(conntent);
 			/*
-			 * mimeMessage.setContent(userName + " \r\n" +
-			 * "http://localhost:8080" + videos.get(0).getVideoUrl(),
-			 * "text/html");
+			 * String conntent = "<video width=\"400\" controls>" +
+			 * "<source src=\"" + videos.get(0).getVideoUrl() +
+			 * "\" type=\"video/mp4\">" + "</video>"; conntent += "<br>"; for
+			 * (Image image : images) { conntent += "<img src=\"" +
+			 * image.getImageUrl() + "\" style=\"width:304px;height:228px;\" >";
+			 * } System.out.println(conntent);
 			 */
-			mimeMessage.setContent("conntent " + videos.get(0).getVideoUrl() , "text/html");
+			String content = "<p> video motion detection </p>";
+			content += videos.get(0).getVideoUrl();
+			content += "<br>";
+			if (images.size() >= 1) {
+				content += "<p> face detection </p>";
+			}
+			for (Image image : images) {
+				content += "<br>";
+				content += image.getImageUrl();
+			}
+			mimeMessage.setContent(content, "text/html");
+
+			// send to security user.
 			mailSender.send(mimeMessage);
+			if (security != null) {
+				mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(security.getEmail()));
+				mailSender.send(mimeMessage);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

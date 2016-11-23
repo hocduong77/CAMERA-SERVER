@@ -52,6 +52,7 @@ import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IImageRepo;
 import school.camera.persistence.dao.INotificationRepo;
 import school.camera.persistence.dao.IVideoRepo;
+import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.Camera;
 import school.camera.persistence.model.Notification;
 import school.camera.persistence.model.Video;
@@ -62,8 +63,10 @@ import school.camera.persistence.model.Video;
 		"PMD.DataflowAnomalyAnalysis" })
 public class Server2 implements Runnable {
 
-	public IVideoRepo videoRepo;
+	String mosQuittoSub = "C:/mosquitto/mosquitto_pub.exe -h 192.168.1.109 -d –t camera/";
 
+	public IVideoRepo videoRepo;
+	public UserRepository userRepo;
 	public CameraRepo cameraRepo;
 	public IImageRepo imageRepo;
 	public INotificationRepo notificationRepo;
@@ -343,6 +346,7 @@ public class Server2 implements Runnable {
 						this.startTime = System.nanoTime();
 						this.mediaWriter = getMedia();
 						recordBefore = true;
+						speaker(cameraId, true);
 					}
 					if (isSaving(recordTime) == true) {
 						BufferedImage screen = recordMatToBufferedImage(processMat);
@@ -360,6 +364,7 @@ public class Server2 implements Runnable {
 						saveVideo(result, camera);
 						sendEmail();
 						System.out.println("stop record");
+						speaker(cameraId, false);
 					}
 
 				}
@@ -408,16 +413,30 @@ public class Server2 implements Runnable {
 
 	}
 
-	/*public byte[] compress(byte[] data) throws IOException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		GZIPOutputStream gzip = new GZIPOutputStream(bos);
-		OutputStreamWriter osw = new OutputStreamWriter(gzip, StandardCharsets.UTF_8);
-		osw.write(data.toString());
-		osw.close();
-		System.out.println();
-		System.out.println("Original: " + data.length);
-		System.out.println("Compressed: " + bos.toByteArray().length);
-		return bos.toByteArray();
+	private static void speaker(Long cameraId, boolean isOn) {
+		try {
+			String cmd1 = "C:/mosquitto/mosquitto_pub.exe -h 192.168.1.109 -d -t camera/" + cameraId + " -m 0";
+			String cmd2 = "C:/mosquitto/mosquitto_pub.exe -h 192.168.1.109 -d -t camera/" + cameraId + " -m 1";
+			if (isOn) {
+				Runtime runtime = Runtime.getRuntime();
+				runtime.exec(cmd2);
+			} else {
+				Runtime runtime = Runtime.getRuntime();
+				runtime.exec(cmd1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	/*public static void main(String[] args) {
+		try {
+			speaker((long) 1, false);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+
 	}*/
 
 	private void saveVideo(String fileName, Camera camera) {
@@ -428,8 +447,9 @@ public class Server2 implements Runnable {
 		video.setNotificationId(this.notificationId);
 		videoRepo.save(video);
 	}
-	private void sendEmail(){
-		
+
+	private void sendEmail() {
+
 		EmailService email = new EmailService();
 		email.cameraRepo = this.cameraRepo;
 		email.notificationId = this.notificationId;
@@ -437,6 +457,7 @@ public class Server2 implements Runnable {
 		email.imageRepo = this.imageRepo;
 		email.notificationRepo = this.notificationRepo;
 		email.mailSender = this.mailSender;
+		email.userRepo = this.userRepo;
 		email.start();
 	}
 
@@ -481,7 +502,7 @@ public class Server2 implements Runnable {
 		Date d2 = new Date();
 		long seconds = (d2.getTime() - recordStart.getTime()) / 1000;
 		// System.out.println(" diff time = " + seconds);
-		if (seconds < 10) {
+		if (seconds < 30) {
 			return true;
 		} else {
 			return false;

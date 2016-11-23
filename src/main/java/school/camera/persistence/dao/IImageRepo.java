@@ -13,4 +13,5 @@ public interface IImageRepo extends JpaRepository<Image, Long>{
 	
 	public List<Image> findByCamera(Camera camera);
 	
+	public List<Image> findByNotificationId(Integer notificationId);
 }
