@@ -430,14 +430,6 @@ public class Server2 implements Runnable {
 
 	}
 
-	/*public static void main(String[] args) {
-		try {
-			speaker((long) 1, false);
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-
-	}*/
 
 	private void saveVideo(String fileName, Camera camera) {
 		Video video = new Video();
