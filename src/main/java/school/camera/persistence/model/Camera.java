@@ -30,8 +30,6 @@ public class Camera {
 
 	private String name;
 
-	private String streamUrl;
-
 	private boolean enabled;
 
 	private int port;
@@ -117,14 +115,6 @@ public class Camera {
 
 	public void setSchedule(CamearSchedule schedule) {
 		this.schedule = schedule;
-	}
-
-	public String getStreamUrl() {
-		return streamUrl;
-	}
-
-	public void setStreamUrl(String streamUrl) {
-		this.streamUrl = streamUrl;
 	}
 
 	public User getUser() {

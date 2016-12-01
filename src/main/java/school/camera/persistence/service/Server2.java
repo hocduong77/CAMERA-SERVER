@@ -270,8 +270,11 @@ public class Server2 implements Runnable {
 			Double motion;
 
 			Socket socket = listener.accept();
+			
 			System.out.println("accept");
+			
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+			
 			while (videoCapture.read(mat)) {
 				// Mat processMat = new Mat();
 				Imgproc.resize(mat, processMat, size);
@@ -283,7 +286,6 @@ public class Server2 implements Runnable {
 					if (movingAvgImg == null) {
 						movingAvgImg = new Mat();
 						workImg.convertTo(movingAvgImg, CvType.CV_32F);
-
 					}
 					// Generate moving average image
 					Imgproc.accumulateWeighted(workImg, movingAvgImg, .03);
@@ -298,10 +300,7 @@ public class Server2 implements Runnable {
 					Imgproc.threshold(gray, gray, 25, 255, Imgproc.THRESH_BINARY);
 					// Total number of changed motion pixels
 					motionPercent = 100.0 * Core.countNonZero(gray) / totalPixels;
-					// Detect if camera is adjusting and reset reference if
-					// more
-					// than
-					// 25%
+					// Detect if camera is adjusting and reset reference if more than 25%
 
 					motion = 100.0 * (objectHeight * objectWith) / (480 * 350);
 					List<Rect> movementLocations = new ArrayList<Rect>();
@@ -309,17 +308,10 @@ public class Server2 implements Runnable {
 						workImg.convertTo(movingAvgImg, CvType.CV_32F);
 
 					} else if (motionPercent > motion) {
-						// if motion percent smaller than 25 then bigger than
-						// motion setuped.
+						// if motion percent smaller than 25 then bigger than motion setuped.
 						movementLocations = contours(gray);
 					}
-
-					// final List<Rect> movementLocations = contours(gray);
-					// Threshold trigger motion
-					// if (motionPercent > 5) {
 					isDetected = false;
-					// System.out.println("motionPercent motion" + motionPercent
-					// + " / " + movementLocations.size());
 					for (final Rect rect : movementLocations) {
 						if (rect.height > objectHeight && rect.width > objectWith) {
 							isDetected = true;
@@ -330,7 +322,6 @@ public class Server2 implements Runnable {
 							// Draw rectangle around fond object
 							Core.rectangle(processMat, rectPoint1, rectPoint2, rectColor, 2);
 						}
-
 					}
 					if (isDetected) {
 						recordTime = new Date();
@@ -338,7 +329,6 @@ public class Server2 implements Runnable {
 							faceDetector(mat);
 							this.captureTime = new Date();
 						}
-						// faceDetector(mat);
 					}
 					if (isDetected == true && recordBefore == false) {
 						this.notificationId = createNotification();

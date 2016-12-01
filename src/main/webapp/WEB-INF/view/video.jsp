@@ -11,7 +11,7 @@
 	<meta name="keywords" content="ip camera, network camera, embed ip camera, embed ip camera into webpage, embed ip camera stream in web page, embed network camera on website">
 	<meta name="description" content="Video streaming solution for embedding your IP camera live video stream in web page.">
 	<meta name="author" content="">
-	< <script src="<c:url value="/resources/dashboard/jquery-1.11.2.min.js"/>"></script>
+	 <script src="<c:url value="/resources/dashboard/jquery-1.11.2.min.js"/>"></script>
 	<script src="<c:url value="/resources/dashboard/bootstrap.min.js"/>"></script>
 	<script src="<c:url value="/resources/dashboard/script.js"/>"></script>
 	<script src="<c:url value="/resources/dashboard/jquery.datetimepicker.js"/>"></script>

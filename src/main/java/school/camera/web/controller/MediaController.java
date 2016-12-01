@@ -16,19 +16,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IImageRepo;
+import school.camera.persistence.dao.INotificationRepo;
 import school.camera.persistence.dao.IVideoRepo;
 import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.Camera;
 import school.camera.persistence.model.Image;
+import school.camera.persistence.model.Notification;
 import school.camera.persistence.model.User;
 import school.camera.persistence.model.Video;
 import school.camera.persistence.service.CameraDto;
+import school.camera.persistence.service.NotificationDto;
 import school.camera.persistence.service.OpenCv;
 import school.camera.persistence.service.SearchDto;
 import school.camera.persistence.service.Server2;
@@ -48,6 +52,9 @@ public class MediaController {
 
 	@Autowired
 	private IImageRepo imageRepo;
+
+	@Autowired
+	private INotificationRepo notificationRepo;
 
 	@Autowired
 	private QuartzConfiguration quart;
@@ -73,6 +80,121 @@ public class MediaController {
 		server2.start();
 		ModelAndView mav = new ModelAndView("opencv");
 		return mav;
+	}
+
+	@RequestMapping(value = "/notification/{id}", method = RequestMethod.GET)
+	public ModelAndView getnotificationDetail(HttpServletRequest request, Model model,
+			@PathVariable("id") Integer notificationId) throws IOException {
+		Notification motification = notificationRepo.findOne(notificationId);
+		Camera camera = cameraRepo.findOne(motification.getCameraId());
+		List<Video> videos = videoRepo.findByNotificationId(notificationId);
+		List<String> imageUrls = new ArrayList<String>();
+		List<Image> images = imageRepo.findByNotificationId(notificationId);
+		for (Image image : images) {
+			imageUrls.add(image.getImageUrl());
+		}
+
+		ModelAndView mav = new ModelAndView("notificationDetail");
+
+		mav.addObject("video", videos.get(0).getVideoUrl());
+		mav.addObject("images", imageUrls);
+		return mav;
+	}
+
+	@RequestMapping(value = "/notification", method = RequestMethod.GET)
+	public ModelAndView getnotification(HttpServletRequest request, Model model) throws IOException {
+		HttpSession session = request.getSession(false);
+		String email = (String) session.getAttribute("email");
+		LOGGER.info("username {}", email);
+		User user = userRepo.findByEmail(email);
+		List<Camera> cameras = new ArrayList<Camera>();
+		if (user.getRole().getRole() == 3) {
+			cameras = cameraRepo.findBySecurityId(user.getUserid());
+		} else {
+			cameras = cameraRepo.findByUser(user);
+		}
+		List<NotificationDto> notificationDtos = new ArrayList<NotificationDto>();
+		List<String> cameraAlias = new ArrayList<String>();
+		for (Camera camera : cameras) {
+			if (camera.isEnabled()) {
+				cameraAlias.add(camera.getAlias());
+				List<Notification> notifications = notificationRepo.findByCameraId(camera.getCameraid());
+				for (Notification notification : notifications) {
+					NotificationDto notificationDto = new NotificationDto();
+					notificationDto.setCameraName(camera.getAlias());
+					notificationDto.setId(notification.getId().toString());
+					notificationDto.setTime(notification.getStartTime().toString());
+					notificationDtos.add(notificationDto);
+				}
+			}
+
+		}
+		SearchDto search = new SearchDto();
+		ModelAndView mav = new ModelAndView("notification", "search", search);
+		mav.addObject("cameraAlias", cameraAlias);
+		mav.addObject("notificationDtos", notificationDtos);
+		return mav;
+		// return new ModelAndView("image", "images", imageUrls );
+	}
+
+	@RequestMapping(value = "/notification", method = RequestMethod.POST)
+	public ModelAndView searchnotification(HttpServletRequest request, Model model,
+			@ModelAttribute("search") SearchDto searchDto) throws IOException {
+		DateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+		Date from = null;
+		Date to = null;
+		try {
+			from = sdf.parse(searchDto.getFrom());
+			to = sdf.parse(searchDto.getTo());
+		} catch (Exception e) {
+			LOGGER.info("to or to null {}");
+		}
+		LOGGER.info("from {}", from);
+		LOGGER.info("to {}", to);
+		HttpSession session = request.getSession(false);
+		String email = (String) session.getAttribute("email");
+		LOGGER.info("username {}", email);
+		User user = userRepo.findByEmail(email);
+		/* List<Camera> cameraSearch = cameraRepo.findByUser(user); */
+		List<Camera> cameraSearch = new ArrayList<Camera>();
+		if (user.getRole().getRole() == 3) {
+			cameraSearch = cameraRepo.findBySecurityId(user.getUserid());
+		} else {
+			cameraSearch = cameraRepo.findByUser(user);
+		}
+		List<String> cameraAlias = new ArrayList<String>();
+		for (Camera camera : cameraSearch) {
+			cameraAlias.add(camera.getAlias());
+		}
+		List<NotificationDto> notificationDtos = new ArrayList<NotificationDto>();
+
+		for (Camera camera : cameraSearch) {
+			LOGGER.info("alias {}", searchDto.getAlias());
+			if (camera.getAlias().equals(searchDto.getAlias())) {
+				LOGGER.info("alias in db {}", camera.getAlias());
+				List<Notification> notifications = notificationRepo.findByCameraId(camera.getCameraid());
+				if (from == null || to == null) {
+					notifications = notificationRepo.findByCameraId(camera.getCameraid());
+				} else {
+					notifications = notificationRepo.findByCameraIdAndStartTimeBetween(camera.getCameraid(), from, to);
+				}
+
+				for (Notification notification : notifications) {
+					NotificationDto notificationDto = new NotificationDto();
+					notificationDto.setCameraName(camera.getAlias());
+					notificationDto.setId(notification.getId().toString());
+					notificationDto.setTime(notification.getStartTime().toString());
+					notificationDtos.add(notificationDto);
+				}
+			}
+
+		}
+		SearchDto search = new SearchDto();
+		ModelAndView mav = new ModelAndView("notification", "search", search);
+		mav.addObject("cameraAlias", cameraAlias);
+		mav.addObject("notificationDtos", notificationDtos);
+		return mav;
+
 	}
 
 	@RequestMapping(value = "/image", method = RequestMethod.GET)
@@ -158,7 +280,6 @@ public class MediaController {
 		mav.addObject("cameraAlias", cameraAlias);
 		mav.addObject("images", imageUrls);
 		return mav;
-		// return new ModelAndView("image", "images", imageUrls );
 	}
 
 	@RequestMapping(value = "/video", method = RequestMethod.GET)

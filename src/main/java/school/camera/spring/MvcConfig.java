@@ -24,99 +24,101 @@ import school.camera.validation.service.EmailValidator;
 import school.camera.validation.service.PasswordMatchesValidator;
 
 @Configuration
-@ComponentScan(basePackages = { "school.camera.web.controller", "school.camera.persistence.service", "school.camera.persistence.dao" })
+@ComponentScan(basePackages = { "school.camera.web.controller", "school.camera.persistence.service",
+		"school.camera.persistence.dao" })
 @EnableWebMvc
 public class MvcConfig extends WebMvcConfigurerAdapter {
 
-    public MvcConfig() {
-        super();
-    }
+	public MvcConfig() {
+		super();
+	}
 
-    // API
+	// API
 
-    @Override
-    public void addViewControllers(final ViewControllerRegistry registry) {
-        super.addViewControllers(registry);
-        registry.addViewController("/securities.html");
-        registry.addViewController("/setting.html");
-        registry.addViewController("/homepage.html");
-        registry.addViewController("/addcamera.html");
-        registry.addViewController("/cameras.html");
-        registry.addViewController("/login.html");
-        registry.addViewController("/logout.html");
-        registry.addViewController("/homepage.html");
-        registry.addViewController("/expiredAccount.html");
-        registry.addViewController("/regitrationConfirm.html");
-        registry.addViewController("/badUser.html");
-        registry.addViewController("/emailError.html");
-        registry.addViewController("/home.html");
-        registry.addViewController("/invalidSession.html");
-        registry.addViewController("/console.html");
-        registry.addViewController("/admin.html");
-        registry.addViewController("/registration.html");
-        registry.addViewController("/successRegister.html");
-        registry.addViewController("/index.html");
-        registry.addViewController("/image.html");
-        registry.addViewController("/video.html");
-        registry.addViewController("/opencv.html");
-        
-    }
+	@Override
+	public void addViewControllers(final ViewControllerRegistry registry) {
+		super.addViewControllers(registry);
+		registry.addViewController("/securities.html");
+		registry.addViewController("/setting.html");
+		registry.addViewController("/homepage.html");
+		registry.addViewController("/addcamera.html");
+		registry.addViewController("/cameras.html");
+		registry.addViewController("/login.html");
+		registry.addViewController("/logout.html");
+		registry.addViewController("/homepage.html");
+		registry.addViewController("/expiredAccount.html");
+		registry.addViewController("/regitrationConfirm.html");
+		registry.addViewController("/badUser.html");
+		registry.addViewController("/emailError.html");
+		registry.addViewController("/home.html");
+		registry.addViewController("/invalidSession.html");
+		registry.addViewController("/console.html");
+		registry.addViewController("/admin.html");
+		registry.addViewController("/registration.html");
+		registry.addViewController("/successRegister.html");
+		registry.addViewController("/index.html");
+		registry.addViewController("/image.html");
+		registry.addViewController("/video.html");
+		registry.addViewController("/opencv.html");
+		registry.addViewController("/notification.html");
+		registry.addViewController("/notificationDetail.html");
+	}
 
-    @Bean
-    public ViewResolver viewResolver() {
-        final InternalResourceViewResolver bean = new InternalResourceViewResolver();
-        bean.setViewClass(JstlView.class);
-        bean.setPrefix("/WEB-INF/view/");
-        bean.setSuffix(".jsp");
-        return bean;
-    }
+	@Bean
+	public ViewResolver viewResolver() {
+		final InternalResourceViewResolver bean = new InternalResourceViewResolver();
+		bean.setViewClass(JstlView.class);
+		bean.setPrefix("/WEB-INF/view/");
+		bean.setSuffix(".jsp");
+		return bean;
+	}
 
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
-    }
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
+	}
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
-        localeChangeInterceptor.setParamName("lang");
-        registry.addInterceptor(localeChangeInterceptor);
-    }
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
+		localeChangeInterceptor.setParamName("lang");
+		registry.addInterceptor(localeChangeInterceptor);
+	}
 
-    @Bean
-    public LocaleResolver localeResolver() {
-        CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
-        cookieLocaleResolver.setDefaultLocale(Locale.ENGLISH);
-        return cookieLocaleResolver;
-    }
+	@Bean
+	public LocaleResolver localeResolver() {
+		CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
+		cookieLocaleResolver.setDefaultLocale(Locale.ENGLISH);
+		return cookieLocaleResolver;
+	}
 
-    @Bean
-    public MessageSource messageSource() {
-        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasename("classpath:messages");
-        messageSource.setUseCodeAsDefaultMessage(true);
-        messageSource.setDefaultEncoding("UTF-8");
-        messageSource.setCacheSeconds(0);
-        return messageSource;
-    }
+	@Bean
+	public MessageSource messageSource() {
+		ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+		messageSource.setBasename("classpath:messages");
+		messageSource.setUseCodeAsDefaultMessage(true);
+		messageSource.setDefaultEncoding("UTF-8");
+		messageSource.setCacheSeconds(0);
+		return messageSource;
+	}
 
-    @Bean
-    public EmailValidator usernameValidator() {
-        EmailValidator userNameValidator = new EmailValidator();
-        return userNameValidator;
-    }
+	@Bean
+	public EmailValidator usernameValidator() {
+		EmailValidator userNameValidator = new EmailValidator();
+		return userNameValidator;
+	}
 
-    @Bean
-    public PasswordMatchesValidator passwordMatchesValidator() {
-        PasswordMatchesValidator passwordMatchesValidator = new PasswordMatchesValidator();
-        return passwordMatchesValidator;
-    }
+	@Bean
+	public PasswordMatchesValidator passwordMatchesValidator() {
+		PasswordMatchesValidator passwordMatchesValidator = new PasswordMatchesValidator();
+		return passwordMatchesValidator;
+	}
 
-    // DIC 7
-    @Bean
-    public HashGenerator hashGenerator() {
-        HashGenerator hashGenerator = new HashGenerator();
-        return hashGenerator;
-    }
+	// DIC 7
+	@Bean
+	public HashGenerator hashGenerator() {
+		HashGenerator hashGenerator = new HashGenerator();
+		return hashGenerator;
+	}
 
 }

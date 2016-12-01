@@ -77,13 +77,12 @@
 						<sec:authorize access="hasRole('ROLE_USER')">
 							<li><a href="<c:url value="/cameras" />">Camera</a></li>
 						</sec:authorize>
-						<%-- <li><a href="<c:url value="/cameras" />">Camera</a></li> --%>
+						<li><a href="<c:url value="/notification" />">notification</a></li>
 						<li><a href="<c:url value="/image" />">Images</a></li>
 						<li><a href="<c:url value="/video" />">Videos</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
 						<li><a href="<c:url value="/j_spring_security_logout" />">Logout</a></li>
-
 					</ul>
 				</div>
 				<!--/.nav-collapse -->
