@@ -270,13 +270,13 @@ public class Server2 implements Runnable {
 			Double motion;
 
 			Socket socket = listener.accept();
-			
+
 			System.out.println("accept");
-			
+
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-			
+
 			while (videoCapture.read(mat)) {
-				// Mat processMat = new Mat();
+				System.out.println("objectWith " + objectWith + "objectHeight " + objectHeight);
 				Imgproc.resize(mat, processMat, size);
 				if (camera.isSecurity()) {
 					// Generate work image by blurring
@@ -300,7 +300,8 @@ public class Server2 implements Runnable {
 					Imgproc.threshold(gray, gray, 25, 255, Imgproc.THRESH_BINARY);
 					// Total number of changed motion pixels
 					motionPercent = 100.0 * Core.countNonZero(gray) / totalPixels;
-					// Detect if camera is adjusting and reset reference if more than 25%
+					// Detect if camera is adjusting and reset reference if more
+					// than 25%
 
 					motion = 100.0 * (objectHeight * objectWith) / (480 * 350);
 					List<Rect> movementLocations = new ArrayList<Rect>();
@@ -308,7 +309,8 @@ public class Server2 implements Runnable {
 						workImg.convertTo(movingAvgImg, CvType.CV_32F);
 
 					} else if (motionPercent > motion) {
-						// if motion percent smaller than 25 then bigger than motion setuped.
+						// if motion percent smaller than 25 then bigger than
+						// motion setuped.
 						movementLocations = contours(gray);
 					}
 					isDetected = false;
@@ -419,7 +421,6 @@ public class Server2 implements Runnable {
 		}
 
 	}
-
 
 	private void saveVideo(String fileName, Camera camera) {
 		Video video = new Video();

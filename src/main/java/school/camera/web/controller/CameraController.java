@@ -79,7 +79,7 @@ public class CameraController {
 
 	private static boolean isStream = true;
 
-	private static HashMap<Long, Server2> streamList = new HashMap<Long, Server2>();
+	private static HashMap<Long, HashMap<Long, Server2>> streamList = new HashMap<Long, HashMap<Long, Server2>>();
 	private static HashMap<Long, ServerSocket> listenerList = new HashMap<Long, ServerSocket>();
 
 	public CameraController() {
@@ -88,11 +88,20 @@ public class CameraController {
 
 	@RequestMapping(value = "/sec_setting", method = RequestMethod.GET)
 	public @ResponseBody String securitySetting(HttpServletRequest request, Model model) throws IOException {
+
+		HttpSession session = request.getSession(false);
+		String email = (String) session.getAttribute("email");
+		LOGGER.info("username {}", email);
+		User user = userRepo.findByEmail(email);
+
 		Long cameraId = Long.parseLong(request.getParameter("cameraId"));
 		double with = Double.parseDouble(request.getParameter("with"));
 		double height = Double.parseDouble(request.getParameter("height"));
 		LOGGER.info("Rendering test cameraId {} with {} height {}", cameraId, with, height);
-		Server2 process = streamList.get(cameraId);
+
+		HashMap<Long, Server2> userCamera = streamList.get(user.getUserid());
+		Server2 process = userCamera.get(cameraId);
+
 		if (process != null) {
 			process.objectWith = with;
 			process.objectHeight = height;
@@ -124,7 +133,7 @@ public class CameraController {
 		for (Camera camera : cameras) {
 			if (camera.isEnabled()) {
 				CameraDto cameraDto = new CameraDto();
-				cameraDto.setPort(startStream(camera));
+				cameraDto.setPort(startStream(camera, user.getUserid()));
 				cameraDto.setCameraId(camera.getCameraid());
 				cameraDto.setObjectWith(camera.getObjectWith());
 				cameraDto.setObjectHeight(camera.getObjectHeight());
@@ -441,7 +450,7 @@ public class CameraController {
 		return port;
 	}
 
-	private int startStream(Camera camera) throws IOException {
+	private int startStream(Camera camera, Long userId) throws IOException {
 		ServerSocket listener = listenerList.get(camera.getCameraid());
 		if (null == listener) {
 			listener = new ServerSocket(camera.getPort());
@@ -462,7 +471,13 @@ public class CameraController {
 		streamingServer.mailSender = mailSender;
 		streamingServer.userRepo = userRepo;
 		streamingServer.start();
-		streamList.put(camera.getCameraid(), streamingServer);
+		HashMap<Long, Server2> userCamera = streamList.get(userId);
+		if (null == userCamera) {
+			userCamera = new HashMap<Long, Server2>();
+		}
+		
+		userCamera.put(camera.getCameraid(), streamingServer);
+		streamList.put(userId, userCamera);
 		return camera.getPort();
 	}
 

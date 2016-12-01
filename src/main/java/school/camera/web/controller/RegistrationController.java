@@ -26,9 +26,14 @@ import org.springframework.web.servlet.ModelAndView;
 import org.w3c.dom.stylesheets.LinkStyle;
 
 import school.camera.event.OnRegistrationCompleteEvent;
+import school.camera.persistence.dao.CameraRepo;
+import school.camera.persistence.dao.IGatewayRepo;
 import school.camera.persistence.dao.UserRepository;
+import school.camera.persistence.model.Camera;
+import school.camera.persistence.model.Gateway;
 import school.camera.persistence.model.User;
 import school.camera.persistence.model.VerificationToken;
+import school.camera.persistence.service.GatewayDto;
 import school.camera.persistence.service.IUserService;
 import school.camera.persistence.service.UserDto;
 import school.camera.validation.service.EmailExistsException;
@@ -43,6 +48,12 @@ public class RegistrationController {
 
 	@Autowired
 	private UserRepository userRepo;
+
+	@Autowired
+	private IGatewayRepo gatewayRepo;
+
+	@Autowired
+	private CameraRepo cameraRepo;
 
 	@Autowired
 	private MessageSource messages;
@@ -86,6 +97,31 @@ public class RegistrationController {
 		}
 		model.addAttribute("users", userDtos);
 		return "securities";
+	}
+
+	@RequestMapping(value = "/gateway", method = RequestMethod.GET)
+	public String getGateways(WebRequest request, Model model) {
+		LOGGER.debug("Rendering securities page.");
+		List<Gateway> gateways = gatewayRepo.findAll();
+		for (Gateway gateway : gateways) {
+
+		}
+		List<GatewayDto> gatewayDtos = new ArrayList<GatewayDto>();
+		for (Gateway gateway : gateways) {
+			GatewayDto gatewayDto = new GatewayDto();
+			gatewayDto.setGatewayId(gateway.getGatewayId());
+			gatewayDto.setGatewayIP(gateway.getGatewayIP());
+			gatewayDto.setUserEmail(getUserByGateway(gateway.getGatewayId()).getEmail());
+			gatewayDtos.add(gatewayDto);
+			
+		}
+		model.addAttribute("gatewayDtos", gatewayDtos);
+		return "gateway";
+	}
+
+	private User getUserByGateway(int gatewayId) {
+		List<Camera> cameras = cameraRepo.findByGatewayId(gatewayId);
+		return cameras.get(0).getUser();
 	}
 
 	@RequestMapping(value = "/console", method = RequestMethod.GET)

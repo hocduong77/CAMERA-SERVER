@@ -11,8 +11,10 @@ public interface CameraRepo extends JpaRepository<Camera, Long> {
 	
 	public List<Camera> findBySecurityId(Long securityId);
 
-	public List<Camera> findByUser(User user);
+	public List<Camera> findByGatewayId(Integer gatewayId);
 
+	public List<Camera> findByUser(User user);
+	
 	public List<Camera> findByUserAndAlias(User user, String alias);
 
 	public Camera findByCameraid(Long cameraId);

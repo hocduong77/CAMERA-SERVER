@@ -39,6 +39,8 @@ public class Camera {
 	private double objectWith;
 
 	private double objectHeight;
+	
+	private int gatewayId;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "userid", nullable = false)
@@ -52,6 +54,16 @@ public class Camera {
 
 	@OneToOne(mappedBy = "camera", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private CamearSchedule schedule;
+
+	
+	
+	public int getGatewayId() {
+		return gatewayId;
+	}
+
+	public void setGatewayId(int gatewayId) {
+		this.gatewayId = gatewayId;
+	}
 
 	public Long getSecurityId() {
 		return securityId;

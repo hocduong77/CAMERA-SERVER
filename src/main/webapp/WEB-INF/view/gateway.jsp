@@ -10,7 +10,7 @@
 
 			$(document).ready(function() {
 				$('#newcamerabutton').click(function() {
-					document.location.href = 'console';
+					document.location.href = 'addGateway';
 				});
 
 				LoadCameras();
@@ -66,21 +66,22 @@
 			<table id="camerastable" class="table table-striped">
 				<thead>
 					<tr>
-						<th>First Name</th>
-						<th>Last Name</th>
-						<th class="hidden-xs hidden-sm">email</th>
+						<th>Gateway IP</th>
+						<th>User email</th>
+						<th>Edit</th>
 						<th></th>
 					</tr>
 				</thead>
 				<tbody>
-					<c:forEach items="${users}" var="user">
+					<c:forEach items="${gatewayDtos}" var="gateway">
 						<tr>
 							<td id="camerastable_28209_alias"><c:out
-									value="${user.firstName}" /></td>
+									value="${gateway.gatewayIP}" /></td>
 							<td id="camerastable_28209_name" class="hidden-xs hidden-sm"><c:out
-									value="${user.lastName}" /></td>
-							<td id="camerastable_28209_url" class="hidden-xs hidden-sm"><c:out
-									value="${user.email}" /></td>
+									value="${gateway.userEmail}" /></td>
+							<td class="rightcell"><a href="<c:url value="/gateway/${gateway.gatewayId}" />"
+								class="btn btn-default" title="Camera page"><span
+									class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></td>
 						<%-- 	<td id="camerastable_28209_enabled"><span
 								class="glyphicon glyphicon-remove" aria-hidden="true"></span></td>
 							<td class="rightcell"><a href="<c:url value="/setting/" />"

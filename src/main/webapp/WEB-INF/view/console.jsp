@@ -59,6 +59,7 @@
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav">
 						<li class=""><a href="<c:url value="/securities" />">Security</a></li>
+						<li><a href="<c:url value="/gateway" />">Gateway</a></li>
 						<li><a href="<c:url value="/ListPort" />">Port</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
