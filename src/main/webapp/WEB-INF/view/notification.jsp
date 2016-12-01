@@ -65,7 +65,7 @@
 <div class="container">
 	<div class="content">
 			<form:form modelAttribute="search" method="POST">
-		<div class="search-content">
+			<div class="search-content">
 			<label class="pull-left">Seach date</label>
 			<form:input id="date_from"  path="from" value="" type="text"  placeholder="From" />
 			<form:input id="date_to" path="to" value="" type="text"  placeholder="To" />

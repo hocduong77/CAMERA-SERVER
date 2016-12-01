@@ -25,6 +25,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 import org.w3c.dom.stylesheets.LinkStyle;
 
+import com.mysql.jdbc.BlobFromLocator;
+
 import school.camera.event.OnRegistrationCompleteEvent;
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IGatewayRepo;
@@ -35,6 +37,7 @@ import school.camera.persistence.model.User;
 import school.camera.persistence.model.VerificationToken;
 import school.camera.persistence.service.GatewayDto;
 import school.camera.persistence.service.IUserService;
+import school.camera.persistence.service.SearchDto;
 import school.camera.persistence.service.UserDto;
 import school.camera.validation.service.EmailExistsException;
 
@@ -99,13 +102,74 @@ public class RegistrationController {
 		return "securities";
 	}
 
+	@RequestMapping(value = "/addGateway", method = RequestMethod.GET)
+	public ModelAndView addGateway(WebRequest request, Model model) {
+		LOGGER.debug("Rendering addGateway page.");
+		GatewayDto gatewayDto = new GatewayDto();
+		List<String> userEmail = new ArrayList<String>();
+		List<User> users = userRepo.findAll();
+		for (User user : users) {
+			if (checkUser(user)) {
+				userEmail.add(user.getEmail());
+				LOGGER.info("user Email do not have gateway {}", user.getEmail());
+			}
+
+		}
+		ModelAndView mav = new ModelAndView("addGateway", "gateway", gatewayDto);
+		mav.addObject("userEmails", userEmail);
+		mav.addObject("mess", "");
+		return mav;
+	}
+
+	@RequestMapping(value = "/addGateway", method = RequestMethod.POST)
+	public ModelAndView saveGateway(WebRequest request, Model model, @ModelAttribute("gateway") GatewayDto gatewayDto) {
+		LOGGER.debug("Rendering addGateway page.");
+
+		User user = userRepo.findByEmail(gatewayDto.getUserEmail());
+		List<Camera> cameras = cameraRepo.findByUser(user);
+		if (!cameras.isEmpty()) {
+			Gateway newGateway = new Gateway();
+			newGateway.setGatewayIP(gatewayDto.getGatewayIP());
+			gatewayRepo.save(newGateway);
+			for (Camera camera : cameras) {
+				camera.setGatewayId(newGateway.getGatewayId());
+				cameraRepo.save(camera);
+			}
+		}
+
+		List<Gateway> gateways = gatewayRepo.findAll();
+		List<GatewayDto> gatewayDtos = new ArrayList<GatewayDto>();
+		for (Gateway gateway : gateways) {
+			GatewayDto gatewayDtoo = new GatewayDto();
+			gatewayDtoo.setGatewayId(gateway.getGatewayId());
+			gatewayDtoo.setGatewayIP(gateway.getGatewayIP());
+			gatewayDtoo.setUserEmail(getUserByGateway(gateway.getGatewayId()).getEmail());
+			gatewayDtos.add(gatewayDtoo);
+
+		}
+
+		return new ModelAndView("gateway", "gatewayDtos", gatewayDtos);
+
+	}
+
+	private Boolean checkUser(User user) {
+		if (user.getRole().getRole() != 1) {
+			return false;
+		} else {
+			List<Camera> cameras = cameraRepo.findByUser(user);
+			for (Camera camera : cameras) {
+				if (camera.getGatewayId() != 0) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	@RequestMapping(value = "/gateway", method = RequestMethod.GET)
 	public String getGateways(WebRequest request, Model model) {
 		LOGGER.debug("Rendering securities page.");
 		List<Gateway> gateways = gatewayRepo.findAll();
-		for (Gateway gateway : gateways) {
-
-		}
 		List<GatewayDto> gatewayDtos = new ArrayList<GatewayDto>();
 		for (Gateway gateway : gateways) {
 			GatewayDto gatewayDto = new GatewayDto();
@@ -113,7 +177,7 @@ public class RegistrationController {
 			gatewayDto.setGatewayIP(gateway.getGatewayIP());
 			gatewayDto.setUserEmail(getUserByGateway(gateway.getGatewayId()).getEmail());
 			gatewayDtos.add(gatewayDto);
-			
+
 		}
 		model.addAttribute("gatewayDtos", gatewayDtos);
 		return "gateway";

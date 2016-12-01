@@ -7,6 +7,7 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
 	<http use-expressions="true">
 
+		<intercept-url pattern="/addGateway*" access="isAuthenticated()" />
 		<intercept-url pattern="/securities*" access="isAuthenticated()" />
 		<intercept-url pattern="/gateway*" access="isAuthenticated()" />
 		<intercept-url pattern="/opencv*" access="permitAll" />

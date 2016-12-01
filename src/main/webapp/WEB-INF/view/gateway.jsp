@@ -82,18 +82,13 @@
 							<td class="rightcell"><a href="<c:url value="/gateway/${gateway.gatewayId}" />"
 								class="btn btn-default" title="Camera page"><span
 									class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></td>
-						<%-- 	<td id="camerastable_28209_enabled"><span
-								class="glyphicon glyphicon-remove" aria-hidden="true"></span></td>
-							<td class="rightcell"><a href="<c:url value="/setting/" />"
-								class="btn btn-default" title="Camera page"><span
-									class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></td> --%>
 						</tr>
 					</c:forEach>
 				</tbody>
 			</table>
 		</div>
 
-		<a href="console" class="btn btn-success nonvisible"
+		<a href=addGateway class="btn btn-success nonvisible"
 			style="display: inline-block;">New security</a><br>
 		<br>
 	</div>
