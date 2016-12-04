@@ -1,7 +1,6 @@
 
 import java.applet.Applet;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -19,10 +18,12 @@ import javax.swing.Timer;
 
 public class camera extends Applet {
 
-	Socket RTSPsocket; // socket used to send/receive RTSP messages
-	DataInputStream RTSPBufferedReader;
-	BufferedWriter RTSPBufferedWriter;
 
+
+	Socket RTSPsocket; // socket used to send/receive RTSP messages
+	DataInputStream  RTSPBufferedReader;
+	BufferedWriter RTSPBufferedWriter;
+	
 	Timer timer; // timer used to receive data from the UDP socket
 	byte[] buf; // buffer used to store data received from the server
 	Image image;
@@ -52,20 +53,8 @@ public class camera extends Applet {
 
 	public void paint(Graphics g) {
 
+		// g.drawImage(image, 0, 0, this);
 		g.drawImage(paintImage, 0, 0, this);
-		/* g.drawImage(resize(paintImage, 480, 340), 0, 0, this); */
-
-	}
-
-	public BufferedImage resize(BufferedImage img, int newW, int newH) {
-		Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
-		BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
-
-		Graphics2D g2d = dimg.createGraphics();
-		g2d.drawImage(tmp, 0, 0, null);
-		g2d.dispose();
-
-		return dimg;
 	}
 
 	public static void main(String[] args) {
@@ -76,11 +65,11 @@ public class camera extends Applet {
 	public void start() {
 		// Init non-blocking RTPsocket that will be used to receive data
 		try {
-
+			
 			RTSPsocket = new Socket("localhost", Integer.parseInt(getParameter("rtpPort")));
-			/* RTSPsocket = new Socket("localhost", 6699); */
+			//RTSPsocket = new Socket("localhost", 4499);
 			// Set input and output stream filters:
-			RTSPBufferedReader = new DataInputStream(RTSPsocket.getInputStream());
+			RTSPBufferedReader = new DataInputStream (RTSPsocket.getInputStream());
 
 		} catch (SocketException se) {
 			System.out.println("Socket exception: " + se);
@@ -103,19 +92,21 @@ public class camera extends Applet {
 	class timerListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 
+
+
 			try {
 				// receive the DP from the socket:
-				int length = RTSPBufferedReader.readInt();
-				byte[] message = new byte[length];// read length of incoming
-													// message
-				if (length > 0) {
-					RTSPBufferedReader.readFully(message, 0, message.length); // read
-																				// the
-																				// message
+				int length = RTSPBufferedReader.readInt();  
+				byte[] message = new byte[length];// read length of incoming message
+				if(length>0) {				    
+				    RTSPBufferedReader.readFully(message, 0, message.length); // read the message
 				}
+				
 
 				// create an RTPpacket object from the DP
-				RTPpacket rtp_packet = new RTPpacket(message, length);
+				RTPpacket rtp_packet = new RTPpacket(message,length);
+
+				
 
 				// get the payload bitstream from the RTPpacket object
 				int payload_length = rtp_packet.getpayload_length();
@@ -127,10 +118,10 @@ public class camera extends Applet {
 				// image = toolkit.createImage(payload, 0, payload_length);
 
 				paintImage = ImageUtil.toBufferedImage(toolkit.createImage(payload, 0, payload_length));
-				paintImage = resize(paintImage, Integer.parseInt(getParameter("width")), Integer.parseInt(getParameter("height")));
+
 				repaint();
 			} catch (InterruptedIOException iioe) {
-				System.out.println("Nothing to read");
+				 System.out.println("Nothing to read");
 			} catch (IOException ioe) {
 				System.out.println("Exception caught: " + ioe);
 			}

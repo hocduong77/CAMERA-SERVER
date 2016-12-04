@@ -86,6 +86,29 @@ public class CameraController {
 
 	}
 
+	@RequestMapping(value = "/startStop", method = RequestMethod.GET)
+	public @ResponseBody String startStop(HttpServletRequest request, Model model) throws IOException {
+
+		HttpSession session = request.getSession(false);
+		String email = (String) session.getAttribute("email");
+		LOGGER.info("username {}", email);
+		User user = userRepo.findByEmail(email);
+
+		Long cameraId = Long.parseLong(request.getParameter("cameraId"));
+
+		LOGGER.info("Rendering startStop cameraId {} with {} height {}", cameraId);
+
+		HashMap<Long, Server2> userCamera = streamList.get(user.getUserid());
+		Server2 process = userCamera.get(cameraId);
+
+		if (process != null) {
+			LOGGER.info("startStop state {}", process.startStop);
+			process.startStop = !process.startStop;
+		}
+		String result = "success";
+		return result;
+	}
+
 	@RequestMapping(value = "/sec_setting", method = RequestMethod.GET)
 	public @ResponseBody String securitySetting(HttpServletRequest request, Model model) throws IOException {
 
@@ -347,40 +370,21 @@ public class CameraController {
 		LOGGER.info("Rendering test api.{}", url);
 		HttpSession session = request.getSession(false);
 		session.setAttribute("camera_test_url", url);
-		// int port = getFreePort();
-		// String cmd = "vlc.exe -I dummy " + url
-		// + " :network-caching=1000
-		// :sout=#transcode{vcodec=theo,vb=1600,scale=1,acodec=none}:http{mux=ogg,dst=:"
-		// + Integer.toString(port) + "/stream} :no-sout-rtp-sap
-		// :no-sout-standard-sap :sout-keep vlc://quit";
-		// LOGGER.info("cmd ==== {}", cmd);
-		//
-		// Runtime runtime = Runtime.getRuntime();
-		//
-		// Process process = runtime.exec(cmd);
-		// try {
-		// Thread.sleep(15000);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// <applet name="Test"
-		// CODEBASE="http://localhost:8080/camera-server/resources/resourceapplet"
-		// code="camera.class" width="580" height="240">
-		// <param name="rtpPort" value="4499" />
-		// <param name="separate_jvm" value="true">
-		// </applet>
+
+		ServerSocket listener = new ServerSocket(4499);
 
 		Server2 streamingServer = new Server2();
 		streamingServer.setUrl(url);
 		streamingServer.setRTP_dest_port(4499);
+		streamingServer.listener = listener;
 		streamingServer.start();
 
 		// session.setAttribute("test_camera", process);
 		LOGGER.info("return stream url");
 		String resultTest = "<applet name=\"Test\""
 				+ "CODEBASE=\"http://localhost:8080/camera-server/resources/resourceapplet\""
-				+ "code=\"camera.class\" width=\"580\" height=\"240\">" + "<param name=\"rtpPort\" value=\"4499\" />"
+				+ "code=\"camera.class\" width=\"480\" height=\"280\">" + "<param name=\"rtpPort\" value=\"4499\" />"
+				+ "<param name=\"width\" value=\"480\" />" + "<param name=\"height\" value=\"280\" />"
 				+ "<param name=\"separate_jvm\" value=\"true\">" + "</applet>";
 		//
 		// String resultTest = "<video id=\"video\" src=\"http://localhost:" +
@@ -470,12 +474,13 @@ public class CameraController {
 		streamingServer.notificationRepo = notificationRepo;
 		streamingServer.mailSender = mailSender;
 		streamingServer.userRepo = userRepo;
+		streamingServer.startStop = true;
 		streamingServer.start();
 		HashMap<Long, Server2> userCamera = streamList.get(userId);
 		if (null == userCamera) {
 			userCamera = new HashMap<Long, Server2>();
 		}
-		
+
 		userCamera.put(camera.getCameraid(), streamingServer);
 		streamList.put(userId, userCamera);
 		return camera.getPort();

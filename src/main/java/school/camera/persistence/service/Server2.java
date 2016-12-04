@@ -75,6 +75,7 @@ public class Server2 implements Runnable {
 	private RecordServer recordServer;
 	public JavaMailSender mailSender;
 	public ServerSocket listener;
+	public boolean startStop;
 	ExecutorService executor = Executors.newFixedThreadPool(1000);// creating a
 																	// pool of 5
 																	// threads
@@ -247,7 +248,8 @@ public class Server2 implements Runnable {
 			final VideoCapture videoCapture = new VideoCapture(getUrl());
 			videoCapture.read(mat);
 			Mat resizeMat = new Mat();
-			Size sz = new Size(480, 340);
+			/* Size sz = new Size(480, 340); */
+			Size sz = new Size(320, 240);
 			Imgproc.resize(mat, resizeMat, sz);
 
 			Size frameSize = new Size(resizeMat.width(), resizeMat.height());
@@ -264,8 +266,13 @@ public class Server2 implements Runnable {
 			final double totalPixels = frameSize.area();
 			double motionPercent = 0.0;
 			boolean recordBefore = false;
-			Camera camera = cameraRepo.findByCameraid(cameraId);
-			Size size = new Size(480, 340);
+			Camera camera = null;
+			try {
+				camera = cameraRepo.findByCameraid(cameraId);
+			} catch (Exception e) {
+				System.out.println("camera is null");
+			}
+			Size size = new Size(320, 240);
 			Mat processMat = new Mat();
 			Double motion;
 
@@ -276,9 +283,11 @@ public class Server2 implements Runnable {
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
 			while (videoCapture.read(mat)) {
-				System.out.println("objectWith " + objectWith + "objectHeight " + objectHeight);
+				if (startStop == false) {
+					continue;
+				}
 				Imgproc.resize(mat, processMat, size);
-				if (camera.isSecurity()) {
+				if (null != camera && camera.isSecurity()) {
 					// Generate work image by blurring
 					Imgproc.GaussianBlur(processMat, workImg, new Size(3, 3), 0);
 					// Imgproc.blur(processMat, workImg, kSize);
@@ -393,6 +402,7 @@ public class Server2 implements Runnable {
 					label.setText("Send frame #" + imagenb);
 				} catch (Exception ex) {
 					ex.printStackTrace();
+					out.close();
 					socket.close();
 					return;
 				}

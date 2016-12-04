@@ -20,7 +20,8 @@
 	content="Video streaming solution for embedding your IP camera live video stream in web page.">
 <meta name="author" content="">
 
-<link href="<c:url value="/resources/dashboard/bootstrap.min.css"/>" rel="stylesheet">
+<link href="<c:url value="/resources/dashboard/bootstrap.min.css"/>"
+	rel="stylesheet">
 
 <script src="<c:url value="/resources/dashboard/jquery-1.11.2.min.js"/>"></script>
 <script src="<c:url value="/resources/dashboard/bootstrap.js"/>"></script>
@@ -32,8 +33,13 @@
 <link href="<c:url value="/resources/dashboard/skin.css"/>"
 	rel="stylesheet">
 <style>
-.cac {margin-top: 8px;}
-.col-sm-6 {width:500px;}
+.cac {
+	margin-top: 8px;
+}
+
+.col-sm-6 {
+	width: 500px;
+}
 </style>
 
 </head>
@@ -72,18 +78,21 @@
 					</video> --%>
 									<applet name="${camera.cameraId}"
 										CODEBASE="http://localhost:8080/camera-server/resources/resourceapplet"
-										code="camera.class" width="580" height="240">
+										code="camera.class" width="480" height="280">
 										<param name="rtpPort" value="${camera.port}" />
+										<param name="width" value="480" />
+										<param name="height" value="280" />
 										<param name="separate_jvm" value="true">
 									</applet>
 									<div class="video-controls">
-
+										<button id="${camera.cameraId}" type="button" onclick="startStop(this.id)" class="capture">Start/Stop</button>
 										<button id="${camera.cameraId}" type="button"
 											onclick="capture(this.id)" class="capture">Capture</button>
 										<input type="text" id="${camera.cameraId}with"
-											value="${camera.objectWith}" type="button" class="col-sm-3 cac">
-										<input type="text" id="${camera.cameraId}height"
-											value="${camera.objectHeight}" class="col-sm-3 cac">
+											value="${camera.objectWith}" type="button"
+											class="col-sm-3 cac"> <input type="text"
+											id="${camera.cameraId}height" value="${camera.objectHeight}"
+											class="col-sm-3 cac">
 										<button id="${camera.cameraId}" onclick="setSecu(this.id)"
 											type="button" class="cac">setting</button>
 										<!-- <button class="record">Record</button> -->
@@ -98,12 +107,14 @@
 					</video> --%>
 									<applet name="${camera.cameraId}"
 										CODEBASE="http://localhost:8080/camera-server/resources/resourceapplet"
-										code="camera.class" width="580" height="240">
+										code="camera.class" width="480" height="280">
 										<param name="rtpPort" value="${camera.port}" />
+										<param name="width" value="480" />
+										<param name="height" value="280" />
 										<param name="separate_jvm" value="true">
 									</applet>
 									<div class="video-controls">
-
+										<button id="${camera.cameraId}" type="button" onclick="startStop(this.id)" class="capture">Start/Stop</button>
 										<button id="${camera.cameraId}" type="button"
 											onclick="capture(this.id)" class="capture">Capture</button>
 										<input type="text" id="${camera.cameraId}with"
@@ -157,6 +168,20 @@
 				url : 'sec_setting',
 				data : 'cameraId=' + cameraId + '&with=' + objectWith
 						+ '&height=' + objectHeight,
+				success : function(data) {
+					var str = data;
+					console.log("data " + data);
+					/* $("#my_image").attr("src", data);
+					$('#myModal').modal('show'); */
+				}
+			});
+		}
+
+		function startStop(cameraId) {
+			$.ajax({
+				type : "get",
+				url : 'startStop',
+				data : 'cameraId=' + cameraId,
 				success : function(data) {
 					var str = data;
 					console.log("data " + data);

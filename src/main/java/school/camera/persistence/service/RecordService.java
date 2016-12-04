@@ -44,7 +44,7 @@ public class RecordService {
 
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-		VideoCapture camera = new VideoCapture("rtsp://192.168.1.100:554/live.sdp");
+		VideoCapture camera = new VideoCapture("rtsp://192.168.1.101:554/live.sdp");
 		//
 		Mat frame = new Mat();
 		// camera.read(frame);
