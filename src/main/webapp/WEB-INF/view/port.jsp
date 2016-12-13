@@ -1,5 +1,6 @@
 <%@ include file="header.jsp"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <div class="container">
 
 	<div id="contentdiv" class="content">
@@ -21,7 +22,7 @@
 			});
 		</script>
 
-<!-- Static navbar -->
+		<!-- Static navbar -->
 		<nav class="navbar navbar-inverse navbar-default">
 			<div class="container-fluid">
 				<div class="navbar-header">
@@ -52,7 +53,7 @@
 			</div>
 			<!--/.container-fluid -->
 		</nav>
-		
+
 		<div id="alert_placeholder"></div>
 
 		<div class="page-header camerapage-header">
@@ -66,38 +67,38 @@
 			<table id="camerastable" class="table table-striped">
 				<thead>
 					<tr>
-						<th>First Name</th>
-						<th>Last Name</th>
-						<th class="hidden-xs hidden-sm">email</th>
+						<th>Port Id</th>
+						<th>Port Number</th>
+						<th class="hidden-xs hidden-sm">Status</th>
 						<th></th>
 					</tr>
 				</thead>
 				<tbody>
-					<c:forEach items="${users}" var="user">
+					<c:forEach items="${ports}" var="port">
 						<tr>
 							<td id="camerastable_28209_alias"><c:out
-									value="${user.firstName}" /></td>
+									value="${port.portId}" /></td>
 							<td id="camerastable_28209_name" class="hidden-xs hidden-sm"><c:out
-									value="${user.lastName}" /></td>
+									value="${port.port}" /></td>
 							<td id="camerastable_28209_url" class="hidden-xs hidden-sm"><c:out
-									value="${user.email}" /></td>
-						<%-- 	<td id="camerastable_28209_enabled"><span
-								class="glyphicon glyphicon-remove" aria-hidden="true"></span></td>
-							<td class="rightcell"><a href="<c:url value="/setting/" />"
-								class="btn btn-default" title="Camera page"><span
-									class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></td> --%>
+									value="${port.status}" /></td>
 						</tr>
 					</c:forEach>
 				</tbody>
 			</table>
 		</div>
 
-		<a href="console" class="btn btn-success nonvisible"
-			style="display: inline-block;">New security</a><br>
-		<br>
-	</div>
+		<div class="content">
+			<form:form modelAttribute="portDto" method="POST">
+				<div class="search-content">
+					<form:input id="port" path="port" value="" type="text"
+						placeholder="Port" />
+					<input type="submit" class="btn btn-default">
+				</div>
+			</form:form>
+		</div>
 
-</div>
+	</div>
 
 </div>
 

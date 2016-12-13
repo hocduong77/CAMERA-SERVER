@@ -39,6 +39,7 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
 	public void addViewControllers(final ViewControllerRegistry registry) {
 		super.addViewControllers(registry);
 		
+		registry.addViewController("/port.html");
 		registry.addViewController("/addGateway.html");
 		registry.addViewController("/gateway.html");
 		registry.addViewController("/securities.html");

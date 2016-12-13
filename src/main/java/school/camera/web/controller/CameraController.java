@@ -254,13 +254,14 @@ public class CameraController {
 				schedule.setRecord(cameraDto.isRecord());
 
 				if (cameraDto.isRecord()) {
-					schedule.setRecordTime(cameraDto.getRecordTime());
+					schedule.setRecordTime(timeFormat.parse(cameraDto.getRecordTime()));
 
 					schedule.setRecordSchedule(timeFormat.parse(cameraDto.getRecordSchedule()));
 
 					schedule.setRecordRepeat(cameraDto.isRecordRepeat());
+					LOGGER.info("isRecordRepeat {}", cameraDto.isRecordRepeat());
 					if (cameraDto.isRecordRepeat() == false) {
-						schedule.setRecordFrom(dateFormat.parse(cameraDto.getCaptureFrom()));
+						schedule.setRecordFrom(dateFormat.parse(cameraDto.getRecordFrom()));
 						schedule.setRecordTo(dateFormat.parse(cameraDto.getRecordTo()));
 					}
 				}
@@ -277,13 +278,14 @@ public class CameraController {
 					quart.deleteJob(camera.getCameraid(), "capture");
 				}
 
-				if (schedule.isRecord() == true && schedule.getRecordTime() > 0
+				if (schedule.isRecord() == true && schedule.getRecordTime() != null
 						&& schedule.getRecordSchedule() != null) {
 					quart.createRecordTrigger(camera, schedule);
 				} else {
 					quart.deleteJob(camera.getCameraid(), "record");
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				Map<Integer, String> time = getTimeInterval();
 				String error = "Invalid Input";
 				ModelAndView mav = new ModelAndView("setting", "camera", cameraDto);
@@ -457,13 +459,14 @@ public class CameraController {
 	private int startStream(Camera camera, Long userId) throws IOException {
 		ServerSocket listener = listenerList.get(camera.getCameraid());
 		if (null == listener) {
-			listener = new ServerSocket(camera.getPort());
+			listener = new ServerSocket(camera.getPort().getPort());
 			listenerList.put(camera.getCameraid(), listener);
 		}
 
 		Server2 streamingServer = new Server2();
 		streamingServer.setUrl(camera.getCameraUrl());
-		streamingServer.setRTP_dest_port(camera.getPort());
+		LOGGER.info("port {}", camera.getPort().getPort());
+		streamingServer.setRTP_dest_port(camera.getPort().getPort());
 		streamingServer.listener = listener;
 		streamingServer.cameraId = camera.getCameraid();
 		streamingServer.objectWith = camera.getObjectWith();
@@ -483,7 +486,7 @@ public class CameraController {
 
 		userCamera.put(camera.getCameraid(), streamingServer);
 		streamList.put(userId, userCamera);
-		return camera.getPort();
+		return camera.getPort().getPort();
 	}
 
 	private CameraDto convert(Camera camera) {
@@ -494,6 +497,9 @@ public class CameraController {
 		if (null != schedule) {
 			if (schedule.getRecordSchedule() != null) {
 				cameraDto.setRecordSchedule(timeFormat.format(schedule.getRecordSchedule()));
+			}
+			if (schedule.getRecordTime() != null) {
+				cameraDto.setRecordTime(timeFormat.format(schedule.getRecordTime()));
 			}
 			if (schedule.getCaptureFrom() != null) {
 				cameraDto.setCaptureFrom(dateFormat.format(schedule.getCaptureFrom()));
@@ -509,10 +515,10 @@ public class CameraController {
 			if (schedule.getRecordTo() != null) {
 				cameraDto.setRecordTo(dateFormat.format(schedule.getRecordTo()));
 			}
-
+			// schedule.setRecordTime(timeFormat.parse(cameraDto.getRecordTime()));
 			cameraDto.setCapture(schedule.isCapture());
 			cameraDto.setCaptureTime(schedule.getCaptureTime());
-			cameraDto.setRecordTime(schedule.getRecordTime());
+			// cameraDto.setRecordTime(schedule.getRecordTime());
 			cameraDto.setRecord(schedule.isRecord());
 			cameraDto.setCaptureRepeat(schedule.isCaptureRepeat());
 			cameraDto.setRecordRepeat(schedule.isRecordRepeat());

@@ -30,13 +30,16 @@ import com.mysql.jdbc.BlobFromLocator;
 import school.camera.event.OnRegistrationCompleteEvent;
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IGatewayRepo;
+import school.camera.persistence.dao.IPortRepo;
 import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.Camera;
 import school.camera.persistence.model.Gateway;
+import school.camera.persistence.model.Port;
 import school.camera.persistence.model.User;
 import school.camera.persistence.model.VerificationToken;
 import school.camera.persistence.service.GatewayDto;
 import school.camera.persistence.service.IUserService;
+import school.camera.persistence.service.PortDto;
 import school.camera.persistence.service.SearchDto;
 import school.camera.persistence.service.UserDto;
 import school.camera.validation.service.EmailExistsException;
@@ -57,6 +60,9 @@ public class RegistrationController {
 
 	@Autowired
 	private CameraRepo cameraRepo;
+
+	@Autowired
+	private IPortRepo portRepo;
 
 	@Autowired
 	private MessageSource messages;
@@ -100,6 +106,36 @@ public class RegistrationController {
 		}
 		model.addAttribute("users", userDtos);
 		return "securities";
+	}
+
+	@RequestMapping(value = "/port", method = RequestMethod.GET)
+	public ModelAndView getPorts(WebRequest request, Model model) {
+		LOGGER.debug("Rendering securities page.");
+		List<Port> ports = portRepo.findAll();
+		PortDto portDto = new PortDto();
+		model.addAttribute("ports", ports);
+
+		ModelAndView mav = new ModelAndView("port", "portDto", portDto);
+		mav.addObject("ports", ports);
+		return mav;
+
+	}
+
+	@RequestMapping(value = "/port", method = RequestMethod.POST)
+	public ModelAndView addPorts(WebRequest request, Model model, @ModelAttribute("portDto") PortDto port) {
+		LOGGER.debug("Rendering securities page.");
+		Port portE = new Port();
+		portE.setPort(port.getPort());
+		portE.setStatus(false);
+		portRepo.saveAndFlush(portE);
+		List<Port> ports = portRepo.findAll();
+		PortDto portDto = new PortDto();
+		model.addAttribute("ports", ports);
+
+		ModelAndView mav = new ModelAndView("port", "portDto", portDto);
+		mav.addObject("ports", ports);
+		return mav;
+
 	}
 
 	@RequestMapping(value = "/addGateway", method = RequestMethod.GET)

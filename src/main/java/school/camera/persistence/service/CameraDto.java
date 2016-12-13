@@ -26,7 +26,7 @@ public class CameraDto {
 
 	private int captureTime;
 
-	private int recordTime;
+	private String recordTime;
 
 	private String recordSchedule;
 
@@ -150,11 +150,12 @@ public class CameraDto {
 		this.captureTime = captureTime;
 	}
 
-	public int getRecordTime() {
+
+	public String getRecordTime() {
 		return recordTime;
 	}
 
-	public void setRecordTime(int recordTime) {
+	public void setRecordTime(String recordTime) {
 		this.recordTime = recordTime;
 	}
 

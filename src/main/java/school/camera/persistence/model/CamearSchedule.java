@@ -37,9 +37,9 @@ public class CamearSchedule {
 	
 	private Date recordTo;
 	
-	private int recordTime;
+	private Date recordStop;
 	
-	private Date recordSchedule;
+	private Date recordStart;
 	
     @OneToOne(targetEntity = Camera.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "cameraid")
@@ -127,20 +127,21 @@ public class CamearSchedule {
 		this.captureTime = captureTime;
 	}
 
-	public int getRecordTime() {
-		return recordTime;
+
+	public Date getRecordTime() {
+		return recordStop;
 	}
 
-	public void setRecordTime(int recordTime) {
-		this.recordTime = recordTime;
+	public void setRecordTime(Date recordTime) {
+		this.recordStop = recordTime;
 	}
 
 	public Date getRecordSchedule() {
-		return recordSchedule;
+		return recordStart;
 	}
 
 	public void setRecordSchedule(Date recordSchedule) {
-		this.recordSchedule = recordSchedule;
+		this.recordStart = recordSchedule;
 	}
 
 	public Camera getCamera() {

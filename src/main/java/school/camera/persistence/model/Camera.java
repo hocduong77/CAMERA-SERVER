@@ -32,14 +32,16 @@ public class Camera {
 
 	private boolean enabled;
 
-	private int port;
+	@OneToOne(targetEntity = Port.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "port")
+	private Port port;
 
 	private boolean security;
 
 	private double objectWith;
 
 	private double objectHeight;
-	
+
 	private int gatewayId;
 
 	@ManyToOne(fetch = FetchType.EAGER)
@@ -55,8 +57,6 @@ public class Camera {
 	@OneToOne(mappedBy = "camera", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private CamearSchedule schedule;
 
-	
-	
 	public int getGatewayId() {
 		return gatewayId;
 	}
@@ -97,11 +97,11 @@ public class Camera {
 		this.security = security;
 	}
 
-	public int getPort() {
+	public Port getPort() {
 		return port;
 	}
 
-	public void setPort(int port) {
+	public void setPort(Port port) {
 		this.port = port;
 	}
 

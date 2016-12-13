@@ -307,115 +307,75 @@
 					</div>
 				</div>
 				<div id="operationtimewindowenableddiv" class="form-group">
-					<label id="securitytextdiv" class="col-sm-2 control-label">Security Management:</label>
-				<div class="col-sm-4 ">
-					<form:select path="securityId" items="${users}" class="form-control">
-					</form:select>
-				</div>
+					<label id="securitytextdiv" class="col-sm-2 control-label">Security
+						Management:</label>
+					<div class="col-sm-4 ">
+						<form:select path="securityId" items="${users}"
+							class="form-control">
+						</form:select>
+					</div>
 				</div>
 				<br>
 
 				<div id="operationtimewindowenableddiv" class="form-group"
 					style="display: block;">
-					<div class="col-sm-offset-2 col-sm-4">
-						<div class="checkbox">
-							<label id="capture"> <form:checkbox
-									onclick="captureEnable(this)" id="capture_enable"
-									path="capture" /> Capture
-							</label>
-						</div>
+					<label id="securitytextdiv" class="col-sm-2 control-label">Enable
+						Record:</label>
+					<div class="col-sm-1">
+						<form:checkbox class="form-control valid"
+							onclick="recordEnable(this)" id="record_enable" path="record" />
 					</div>
-					<div class="col-sm-4">
-						<div class="checkbox">
-							<label id="operationtimewindowenabledtextdiv"
-								style="margin-left: 50px;"> <form:checkbox
-									onclick="recordEnable(this)" id="record_enable" path="record" />
-								Record
-							</label>
-						</div>
-					</div>
+
 				</div>
 
 				<div id="operationtimewindowenableddivv" class="form-group"
 					style="display: block;">
-					<div class="col-sm-offset-2 col-sm-4">
-						<div class="checkbox">
-							<label id="capture"> <form:checkbox id="captureRepeat"
-									onclick="capRepeat(this)" path="captureRepeat" /> Repeat Every
-								Day
-							</label>
-						</div>
-					</div>
-					<div class="col-sm-4">
-						<div class="checkbox">
-							<label id="operationtimewindowenabledtextdiv"
-								style="margin-left: 50px;"> <form:checkbox
-									id="recordRepeat" onclick="recRepeat(this)" path="recordRepeat" />
-								Repeat Every Day
-							</label>
-						</div>
+					<label id="securitytextdiv" class="col-sm-2 control-label">Repeat
+						Every Day:</label>
+					<div class="col-sm-1">
+						<form:checkbox class="form-control valid"
+							onclick="recRepeat(this)" id="recordRepeat" path="recordRepeat" />
 					</div>
 				</div>
 				<div id="operationtimewindowfromdiv" class="form-group"
 					style="display: block;">
-					<label id="operationtimewindowfromtextdiv"
-						class="col-sm-2 control-label">Interval:&nbsp;</label>
-					<div class="col-sm-4">
-						<form:select if="captureTime" path="captureTime" items="${time}"
-							class="form-control">
-						</form:select>
-					</div>
-					<label id="operationtimewindowfromtextdiv"
-						class="control-label text-left right-content">Time:&nbsp;</label>
+
+					<label id="nametextdiv" class="col-sm-2 control-label">Start
+						Time:</label>
 					<div class="col-sm-4">
 						<form:input path="recordSchedule" value="" type="text"
-							class="form-control" />
+							class="form-control valid" placeholder="hh:mm" />
+					</div>
 
+				</div>
+				<div id="operationtimewindowtodiv" class="form-group"
+					style="display: block;">
+
+					<label id="nametextdiv" class="col-sm-2 control-label">Stop Time:</label>
+					<div class="col-sm-4">
+						<form:input path="recordTime" value="" type="text"
+							class="form-control valid" placeholder="hh:mm" />
 					</div>
 				</div>
 				<div id="operationtimewindowtodiv" class="form-group"
 					style="display: block;">
-					<label id="capture_from" class="col-sm-2 control-label">From:&nbsp;</label>
-					<div class="col-sm-4 ">
-						<form:input path="captureFrom" id="capture_from_input"
-							class="form-control" value="" type="text" placeholder="From" />
-					</div>
+
 					<label id="operationtimewindowtotextdiv"
-						class="control-label right-content">Length:&nbsp;</label>
-					<div class="col-sm-4 ">
-						<form:select path="recordTime" items="${time}"
-							class="form-control">
-						</form:select>
-					</div>
-				</div>
-				<div id="operationtimewindowtodiv" class="form-group"
-					style="display: block;">
-					<label id="operationtimewindowtotextdiv"
-						class="col-sm-2 control-label">To&nbsp;</label>
-					<div class="col-sm-4 ">
-						<form:input path="captureTo" id="capture_to_input"
-							class="form-control" value="" type="text" placeholder="To" />
-					</div>
-					<label id="operationtimewindowtotextdiv"
-						class="control-label right-content">From:&nbsp;</label>
+						class="col-sm-2 control-label">From:&nbsp;</label>
 					<div class="col-sm-4 ">
 						<form:input path="recordFrom" id="record_from_input"
-							class="form-control" value="" type="text" placeholder="From" />
+							class="form-control" value="" type="text" placeholder="dd-MM-yyyy" />
 					</div>
 				</div>
 
 				<div id="operationtimewindowtodiv" class="form-group"
 					style="display: block;">
+
 					<label id="operationtimewindowtotextdiv"
-						class="col-sm-2 control-label">&nbsp;</label>
-					<div class="col-sm-4 ">
-						<!-- <input id="date_to"   class="form-control" value="" type="text"  placeholder="To" /> -->
-					</div>
-					<label id="operationtimewindowtotextdiv"
-						class="control-label right-content">to:&nbsp;</label>
+						class="col-sm-2 control-label">to:&nbsp;</label>
 					<div class="col-sm-4 ">
 						<form:input path="recordTo" id="record_to_input"
-							class="form-control" value="" type="text" placeholder="From" />
+							class="form-control" value="" type="text" placeholder="dd-MM-yyyy" />
 					</div>
 				</div>
 

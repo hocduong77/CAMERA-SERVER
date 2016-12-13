@@ -21,6 +21,7 @@ import org.opencv.highgui.VideoCapture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import com.xuggle.mediatool.IMediaWriter;
@@ -29,8 +30,10 @@ import com.xuggle.xuggler.ICodec;
 
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IImageRepo;
+import school.camera.persistence.dao.INotificationRepo;
 import school.camera.persistence.dao.IVideoRepo;
 import school.camera.persistence.dao.ScheduleRepo;
+import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.CamearSchedule;
 import school.camera.persistence.model.Camera;
 import school.camera.persistence.model.Image;
@@ -54,55 +57,14 @@ public class CameraService implements ICameraService {
 	@Autowired
 	private IVideoRepo videoRepo;
 
-	@Override
-	public void capture(Long cameraId) throws IOException, InterruptedException {
-		LOGGER.info(">>>>>> START CAPTURE >>>>>>");
-		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
-		String fileName = df.format(new Date());
-		Camera camera = cameraRepo.findByCameraid(cameraId);
-		String cmd = "vlc " + camera.getCameraUrl()
-				+ "  --rate=1 --video-filter=scene --vout=dummy --start-time=0 --stop-time=1 --scene-format=jpeg --scene-prefix="
-				+ fileName
-				+ " --scene-replace --scene-path=C:\\Users\\BinhHoc\\Documents\\GitHub\\CAMERA-SERVER\\src\\main\\webapp\\resources\\images"
-				+ " vlc://quit";
-		LOGGER.info("cmd ==== {}", cmd);
-		Runtime runtime = Runtime.getRuntime();
-		Process process = runtime.exec(cmd);
-		process.waitFor();
-		String result = "http://localhost:8080/images/" + fileName + ".jpeg";
-		Image image = new Image();
-		image.setCamera(camera);
-		image.setDate(new Date());
-		image.setImageUrl(result);
-		imageRepo.save(image);
-		LOGGER.info(">>>>>> END CAPTURE >>>>>>");
-	}
+	@Autowired
+	private JavaMailSender mailSender;
 
-	@Override
-	public void record(Long cameraId) throws IOException, InterruptedException {
-		LOGGER.info(">>>>>> START RECORD >>>>>>");
-		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
-		String fileName = df.format(new Date()) + ".ogg";
-		Camera camera = cameraRepo.findByCameraid(cameraId);
+	@Autowired
+	private INotificationRepo notificationRepo;
 
-		CamearSchedule schedule = scheduleRepo.findBycamera(camera);
-		String cmd = "vlc " + camera.getCameraUrl()
-				+ "  --sout=#transcode{vcodec=theo}:std{access=file,mux=ogg,dst=C:\\Users\\BinhHoc\\Documents\\GitHub\\CAMERA-SERVER\\src\\main\\webapp\\resources\\videos\\"
-				+ fileName + " --stop-time=" + schedule.getRecordTime() + " vlc://quit";
-		LOGGER.info("cmd ==== {}", cmd);
-		Runtime runtime = Runtime.getRuntime();
-		Process process = runtime.exec(cmd);
-		process.waitFor();
-		String result = "http://localhost:8080/videos/" + fileName;
-		Video video = new Video();
-		video.setCamera(camera);
-		video.setDate(new Date());
-		video.setVideoUrl(result);
-		videoRepo.save(video);
-
-		LOGGER.info(">>>>>> END RECORD >>>>>>");
-
-	}
+	@Autowired
+	private UserRepository userRepo;
 
 	@Override
 	public String captureNew(Long cameraId) throws IOException, InterruptedException {
@@ -174,66 +136,32 @@ public class CameraService implements ICameraService {
 	@Override
 	public String recordNew(Long cameraId) throws IOException, InterruptedException {
 		LOGGER.info(">>>>>> START RECORD >>>>>>");
-		DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
-		String videoName = df.format(new Date()) + ".mp4";
-		String fileName = "C:/Users/BinhHoc/Documents/GitHub/CAMERA-SERVER/src/main/webapp/resources/videos/"
-				+ videoName;
-
 		Camera camera = cameraRepo.findByCameraid(cameraId);
 
 		CamearSchedule schedule = scheduleRepo.findBycamera(camera);
 
 		double FRAME_RATE = 50;
+		int SECONDS_TO_RUN_FOR = (int) ((schedule.getRecordSchedule().getTime() - schedule.getRecordTime().getTime())
+				/ 1000);
+		LOGGER.info(">>>>>>SECONDS_TO_RUN_FOR >>>>>> {}", SECONDS_TO_RUN_FOR);
+		Server2 streamingServer = new Server2();
+		streamingServer.setUrl(camera.getCameraUrl());
+		streamingServer.setRTP_dest_port(camera.getPort().getPort());
+		streamingServer.cameraId = camera.getCameraid();
+		streamingServer.objectWith = camera.getObjectWith();
+		streamingServer.objectHeight = camera.getObjectHeight();
+		streamingServer.cameraRepo = cameraRepo;
+		streamingServer.videoRepo = videoRepo;
+		streamingServer.imageRepo = imageRepo;
+		streamingServer.notificationRepo = notificationRepo;
+		streamingServer.mailSender = mailSender;
+		streamingServer.userRepo = userRepo;
+		streamingServer.startStop = true;
+		streamingServer.isScheduler = true;
+		streamingServer.schedulerTime = (int) (SECONDS_TO_RUN_FOR * FRAME_RATE);
+		streamingServer.start();
 
-		int SECONDS_TO_RUN_FOR = schedule.getRecordTime();
-
-		// let's make a IMediaWriter to write the file.
-		IMediaWriter writer = ToolFactory.makeWriter(fileName);
-
-		Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
-
-		// We tell it we're going to add one video stream, with id 0,
-		// at position 0, and that it will have a fixed frame rate of
-		// FRAME_RATE.
-		writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_H264, screenBounds.width / 2, screenBounds.height / 2);
-
-		long startTime = System.nanoTime();
-
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
-		VideoCapture videoCapture = new VideoCapture(camera.getCameraUrl());
-		Mat frame = new Mat();
-
-		for (int index = 0; index < SECONDS_TO_RUN_FOR * FRAME_RATE; index++) {
-
-			if (videoCapture.read(frame)) {
-				// take the screen shot
-				BufferedImage screen = recordMatToBufferedImage(frame);
-				// convert to the right image type
-				BufferedImage bgrScreen = convertToType(screen, 5);
-
-				// encode the image to stream #0
-				writer.encodeVideo(0, bgrScreen, System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
-
-				// sleep for frame rate milliseconds
-				try {
-					Thread.sleep((long) (1000 / FRAME_RATE));
-				} catch (InterruptedException e) {
-					// ignore
-				}
-
-			}
-
-		}
 		LOGGER.info(">>>>>> END RECORD >>>>>>");
-		writer.close();
-
-		String result = "http://localhost:8080/videos/" + videoName;
-		Video video = new Video();
-		video.setCamera(camera);
-		video.setDate(new Date());
-		video.setVideoUrl(result);
-		videoRepo.save(video);
 		return null;
 	}
 

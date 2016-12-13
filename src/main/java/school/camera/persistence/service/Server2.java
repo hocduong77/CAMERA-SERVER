@@ -76,6 +76,8 @@ public class Server2 implements Runnable {
 	public JavaMailSender mailSender;
 	public ServerSocket listener;
 	public boolean startStop;
+	public boolean isScheduler = false;
+	int schedulerTime = 0;
 	ExecutorService executor = Executors.newFixedThreadPool(1000);// creating a
 																	// pool of 5
 																	// threads
@@ -276,18 +278,33 @@ public class Server2 implements Runnable {
 			Mat processMat = new Mat();
 			Double motion;
 
-			Socket socket = listener.accept();
-
+			Socket socket = null;
+			if (isScheduler == false) {
+				socket = listener.accept();
+			}
 			System.out.println("accept");
-
-			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-
+			DataOutputStream out = null;
+			if (socket != null) {
+				out = new DataOutputStream(socket.getOutputStream());
+			}
+			int index = 0;
 			while (videoCapture.read(mat)) {
 				if (startStop == false) {
 					continue;
 				}
+				if (isScheduler == true) {
+					index++;
+					if (index >= schedulerTime) {
+						break;
+					} else {
+						try {
+							Thread.sleep((long) (1000 / 50));
+						} catch (InterruptedException e) {
+						}
+					}
+				}
 				Imgproc.resize(mat, processMat, size);
-				if (null != camera && camera.isSecurity()) {
+				if ((null != camera && camera.isSecurity()) || isScheduler == true) {
 					// Generate work image by blurring
 					Imgproc.GaussianBlur(processMat, workImg, new Size(3, 3), 0);
 					// Imgproc.blur(processMat, workImg, kSize);
@@ -395,15 +412,21 @@ public class Server2 implements Runnable {
 					// ClientIPAddr, getRTP_dest_port());
 
 					// RTPsocket.send(senddp);
+					if (out != null) {
+						out.writeInt(packet_length); // write length of the
+														// message
+						out.write(packet_bits); // write the message
+					}
 
-					out.writeInt(packet_length); // write length of the message
-					out.write(packet_bits); // write the message
 					// update GUI
 					label.setText("Send frame #" + imagenb);
 				} catch (Exception ex) {
 					ex.printStackTrace();
-					out.close();
-					socket.close();
+					if (socket != null) {
+						out.close();
+						socket.close();
+					}
+
 					return;
 				}
 
