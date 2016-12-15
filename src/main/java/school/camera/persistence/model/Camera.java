@@ -32,7 +32,7 @@ public class Camera {
 
 	private boolean enabled;
 
-	@OneToOne(targetEntity = Port.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@OneToOne(targetEntity = Port.class, fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 	@JoinColumn(name = "port")
 	private Port port;
 

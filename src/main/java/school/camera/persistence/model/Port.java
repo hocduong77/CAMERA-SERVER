@@ -19,7 +19,7 @@ public class Port {
 
 	private boolean status;
 
-	@OneToOne(mappedBy = "port", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@OneToOne(mappedBy = "port", fetch = FetchType.EAGER, cascade = CascadeType.MERGE )
 	private Camera camera;
 
 	public Integer getPortId() {
@@ -45,5 +45,15 @@ public class Port {
 	public void setStatus(boolean status) {
 		this.status = status;
 	}
+
+	public Camera getCamera() {
+		return camera;
+	}
+
+	public void setCamera(Camera camera) {
+		this.camera = camera;
+	}
+	
+	
 
 }

@@ -2,7 +2,6 @@ package school.camera.web.controller;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,12 +33,14 @@ import org.springframework.web.servlet.ModelAndView;
 import school.camera.persistence.dao.CameraRepo;
 import school.camera.persistence.dao.IImageRepo;
 import school.camera.persistence.dao.INotificationRepo;
+import school.camera.persistence.dao.IPortRepo;
 import school.camera.persistence.dao.IVideoRepo;
 import school.camera.persistence.dao.ScheduleRepo;
 import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.CamearSchedule;
 import school.camera.persistence.model.Camera;
 import school.camera.persistence.model.Image;
+import school.camera.persistence.model.Port;
 import school.camera.persistence.model.User;
 import school.camera.persistence.service.CameraDto;
 import school.camera.persistence.service.ICameraService;
@@ -52,6 +53,9 @@ public class CameraController {
 
 	@Autowired
 	private CameraRepo cameraRepo;
+
+	@Autowired
+	private IPortRepo portRepo;
 
 	@Autowired
 	private IImageRepo imageRepo;
@@ -81,6 +85,7 @@ public class CameraController {
 
 	private static HashMap<Long, HashMap<Long, Server2>> streamList = new HashMap<Long, HashMap<Long, Server2>>();
 	private static HashMap<Long, ServerSocket> listenerList = new HashMap<Long, ServerSocket>();
+	private static HashMap<Long, ServerSocket> listenerTest = new HashMap<Long, ServerSocket>();
 
 	public CameraController() {
 
@@ -342,21 +347,7 @@ public class CameraController {
 			throws IOException, InterruptedException {
 		Long cameraId = Long.parseLong(request.getParameter("cameraId"));
 		LOGGER.info("Rendering test api.{}", cameraId);
-		// DateFormat df = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
-		// String fileName = df.format(new Date());
 		Camera camera = cameraRepo.findByCameraid(cameraId);
-		// String cmd = "vlc " + camera.getCameraUrl()
-		// + " --rate=1 --video-filter=scene --vout=dummy --start-time=0
-		// --stop-time=1 --scene-format=jpeg --scene-prefix="
-		// + fileName
-		// + " --scene-replace
-		// --scene-path=C:\\Users\\BinhHoc\\Documents\\GitHub\\CAMERA-SERVER\\src\\main\\webapp\\resources\\images"
-		// + " vlc://quit";
-		// LOGGER.info("cmd ==== {}", cmd);
-		// Runtime runtime = Runtime.getRuntime();
-		// Process process = runtime.exec(cmd);
-		// process.waitFor();
-		// String result = "http://localhost:8080/images/" + fileName + ".jpeg";
 		String result = cameraService.captureNew(cameraId);
 		Image image = new Image();
 		image.setCamera(camera);
@@ -368,37 +359,42 @@ public class CameraController {
 
 	@RequestMapping(value = "/test", method = RequestMethod.POST)
 	public @ResponseBody String testCamera(HttpServletRequest request, Model model) throws IOException {
+		HttpSession session = request.getSession(false);
+		String email = (String) session.getAttribute("email");
+		LOGGER.info("username {}", email);
+		User user = userRepo.findByEmail(email);
 		String url = request.getParameter("url");
 		LOGGER.info("Rendering test api.{}", url);
-		HttpSession session = request.getSession(false);
 		session.setAttribute("camera_test_url", url);
-
-		ServerSocket listener = new ServerSocket(4499);
+		ServerSocket listener = null;
+		if (getFreePort() != null) {
+			listener = new ServerSocket(getFreePort().getPort());
+			listenerTest.put(user.getUserid(), listener);
+		}
 
 		Server2 streamingServer = new Server2();
 		streamingServer.setUrl(url);
-		streamingServer.setRTP_dest_port(4499);
+		streamingServer.startStop = true;
+		if (getFreePort() != null) {
+			streamingServer.setRTP_dest_port(getFreePort().getPort());
+		}
 		streamingServer.listener = listener;
 		streamingServer.start();
 
-		// session.setAttribute("test_camera", process);
 		LOGGER.info("return stream url");
 		String resultTest = "<applet name=\"Test\""
 				+ "CODEBASE=\"http://localhost:8080/camera-server/resources/resourceapplet\""
-				+ "code=\"camera.class\" width=\"480\" height=\"280\">" + "<param name=\"rtpPort\" value=\"4499\" />"
-				+ "<param name=\"width\" value=\"480\" />" + "<param name=\"height\" value=\"280\" />"
-				+ "<param name=\"separate_jvm\" value=\"true\">" + "</applet>";
-		//
-		// String resultTest = "<video id=\"video\" src=\"http://localhost:" +
-		// Integer.toString(port)
-		// + "/stream\" type=\"video/ogg; codecs=theora\"
-		// autoplay=\"autoplay\"/>";
+				+ "code=\"camera.class\" width=\"480\" height=\"280\">" + "<param name=\"rtpPort\" value=\""
+				+ getFreePort().getPort() + "\" />" + "<param name=\"width\" value=\"480\" />"
+				+ "<param name=\"height\" value=\"280\" />" + "<param name=\"separate_jvm\" value=\"true\">"
+				+ "</applet>";
+
 		LOGGER.info("result ==== {}", resultTest);
 		return resultTest;
 	}
 
 	@RequestMapping(value = "/saveCamera", method = RequestMethod.GET)
-	public ModelAndView saveCamera(HttpServletRequest request, Model model) {
+	public ModelAndView saveCamera(HttpServletRequest request, Model model) throws IOException {
 		HttpSession session = request.getSession(false);
 		String cameraUrl = (String) session.getAttribute("camera_test_url");
 		// Process process = (Process) session.getAttribute("test_camera");
@@ -413,9 +409,19 @@ public class CameraController {
 		LOGGER.info("username {}", email);
 		User user = userRepo.findByEmail(email);
 		camera.setUser(user);
+		Port port = getFreePort();
+		camera.setPort(port);
+		port.setCamera(camera);
 		cameraRepo.save(camera);
+		portRepo.save(port);
 		List<CameraDto> cameras = getListCameras(user);
-		// process.destroy();
+		ServerSocket test = listenerTest.get(user.getUserid());
+		if (test != null) {
+			LOGGER.info("port not null");
+			test.close();
+		} else {
+			LOGGER.info("port null");
+		}
 		return new ModelAndView("cameras", "cameras", cameras);
 	}
 
@@ -449,18 +455,27 @@ public class CameraController {
 		return cameraDtos;
 	}
 
-	private int getFreePort() throws IOException {
-		ServerSocket socket = new ServerSocket(0);
-		int port = socket.getLocalPort();
-		socket.close();
-		return port;
+	private Port getFreePort() throws IOException {
+		List<Port> ports = portRepo.findAll();
+		for (Port port : ports) {
+			if (port.isStatus() == false) {
+				LOGGER.info("port free {}", port.getPort());
+				return port;
+			}
+		}
+		return null;
 	}
 
 	private int startStream(Camera camera, Long userId) throws IOException {
 		ServerSocket listener = listenerList.get(camera.getCameraid());
 		if (null == listener) {
-			listener = new ServerSocket(camera.getPort().getPort());
-			listenerList.put(camera.getCameraid(), listener);
+			try {
+				listener = new ServerSocket(camera.getPort().getPort());
+				listenerList.put(camera.getCameraid(), listener);
+			} catch (Exception e) {
+				LOGGER.info("port already in use {}", camera.getPort().getPort());
+			}
+
 		}
 
 		Server2 streamingServer = new Server2();

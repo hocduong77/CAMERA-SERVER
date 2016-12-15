@@ -195,29 +195,10 @@ public class Server2 implements Runnable {
 	// --------------------------------
 	public Server2() {
 
-		// init Frame
-		// super("Server");
-		//
-		// // init Timer
-		// timer = new Timer(FRAME_PERIOD, this);
-		// timer.setInitialDelay(0);
-		// timer.setCoalesce(true);
-
-		// allocate memory for the sending buffer
 		buf = new byte[99000];
-
-		// Handler to close the main window
-		// addWindowListener(new WindowAdapter() {
-		// public void windowClosing(WindowEvent e) {
-		// // stop the timer and exit
-		// timer.stop();
-		// System.exit(0);
-		// }
-		// });
 
 		// GUI:
 		label = new JLabel("Send frame #        ", JLabel.CENTER);
-		// getContentPane().add(label, BorderLayout.CENTER);
 	}
 
 	private IMediaWriter getMedia() {
@@ -402,10 +383,10 @@ public class Server2 implements Runnable {
 					// bytes
 					byte[] packet_bits = new byte[packet_length];
 					rtp_packet.getpacket(packet_bits);
-
+					byte[] packet_compress = compress(packet_bits);
 					// send the packet as a DatagramPacket over the UDP
 					// socket
-					if (packet_bits.length > 65507) {
+					if (packet_compress.length > 65507) {
 						continue;
 					}
 					// senddp = new DatagramPacket(packet_bits, packet_length,
@@ -413,9 +394,10 @@ public class Server2 implements Runnable {
 
 					// RTPsocket.send(senddp);
 					if (out != null) {
-						out.writeInt(packet_length); // write length of the
-														// message
-						out.write(packet_bits); // write the message
+						out.writeInt(packet_compress.length); // write length of
+																// the
+						// message
+						out.write(packet_compress); // write the message
 					}
 
 					// update GUI
@@ -436,6 +418,22 @@ public class Server2 implements Runnable {
 			e.printStackTrace();
 		}
 
+	}
+
+	public static byte[] compress(byte[] data) throws IOException {
+		Deflater deflater = new Deflater();
+		deflater.setInput(data);
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+		deflater.finish();
+		byte[] buffer = new byte[1024];
+		while (!deflater.finished()) {
+			int count = deflater.deflate(buffer); // returns the generated
+													// code... index
+			outputStream.write(buffer, 0, count);
+		}
+		outputStream.close();
+		byte[] output = outputStream.toByteArray();
+		return output;
 	}
 
 	private static void speaker(Long cameraId, boolean isOn) {

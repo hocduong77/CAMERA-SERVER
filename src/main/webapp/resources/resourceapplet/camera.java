@@ -8,12 +8,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
 
 import javax.swing.Timer;
 
@@ -31,6 +34,9 @@ public class camera extends Applet {
 
 	final String CRLF = "\r\n";
 
+	int width;
+	int height;
+	int port;
 	/**
 	 * image paint to applet.
 	 */
@@ -47,7 +53,9 @@ public class camera extends Applet {
 		// allocate enough memory for the buffer used to receive data from the
 		// server
 		buf = new byte[99000];
-
+		width = Integer.parseInt(getParameter("width"));
+		height = Integer.parseInt(getParameter("height"));
+		port = Integer.parseInt(getParameter("rtpPort"));
 	}
 
 	public void paint(Graphics g) {
@@ -77,8 +85,9 @@ public class camera extends Applet {
 		// Init non-blocking RTPsocket that will be used to receive data
 		try {
 
-			RTSPsocket = new Socket("localhost", Integer.parseInt(getParameter("rtpPort")));
-			/* RTSPsocket = new Socket("localhost", 6699); */
+			RTSPsocket = new Socket("localhost", port);
+
+			// RTSPsocket = new Socket("localhost", 6699);
 			// Set input and output stream filters:
 			RTSPBufferedReader = new DataInputStream(RTSPsocket.getInputStream());
 
@@ -101,6 +110,22 @@ public class camera extends Applet {
 	}
 
 	class timerListener implements ActionListener {
+
+		public byte[] decompress(byte[] data) throws IOException, DataFormatException {
+			Inflater inflater = new Inflater();
+			inflater.setInput(data);
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+			byte[] buffer = new byte[1024];
+			while (!inflater.finished()) {
+				int count = inflater.inflate(buffer);
+				outputStream.write(buffer, 0, count);
+			}
+			outputStream.close();
+			byte[] output = outputStream.toByteArray();
+
+			return output;
+		}
+
 		public void actionPerformed(ActionEvent e) {
 
 			try {
@@ -113,9 +138,15 @@ public class camera extends Applet {
 																				// the
 																				// message
 				}
-
+				byte[] decompress = null;
+				try {
+					decompress = decompress(message);
+				} catch (DataFormatException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				// create an RTPpacket object from the DP
-				RTPpacket rtp_packet = new RTPpacket(message, length);
+				RTPpacket rtp_packet = new RTPpacket(decompress, decompress.length);
 
 				// get the payload bitstream from the RTPpacket object
 				int payload_length = rtp_packet.getpayload_length();
@@ -126,8 +157,11 @@ public class camera extends Applet {
 				Toolkit toolkit = Toolkit.getDefaultToolkit();
 				// image = toolkit.createImage(payload, 0, payload_length);
 
-				paintImage = ImageUtil.toBufferedImage(toolkit.createImage(payload, 0, payload_length));
-				paintImage = resize(paintImage, Integer.parseInt(getParameter("width")), Integer.parseInt(getParameter("height")));
+				// paintImage =
+				// ImageUtil.toBufferedImage(toolkit.createImage(payload, 0,
+				// payload_length));
+				paintImage = resize(ImageUtil.toBufferedImage(toolkit.createImage(payload, 0, payload_length)), width,
+						height);
 				repaint();
 			} catch (InterruptedIOException iioe) {
 				System.out.println("Nothing to read");
