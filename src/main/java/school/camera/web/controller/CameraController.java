@@ -31,6 +31,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import school.camera.persistence.dao.CameraRepo;
+import school.camera.persistence.dao.IGatewayRepo;
 import school.camera.persistence.dao.IImageRepo;
 import school.camera.persistence.dao.INotificationRepo;
 import school.camera.persistence.dao.IPortRepo;
@@ -51,6 +52,9 @@ import school.camera.spring.QuartzConfiguration;
 @Controller
 public class CameraController {
 
+	@Autowired 
+	IGatewayRepo gatewayRepo;
+	
 	@Autowired
 	private CameraRepo cameraRepo;
 
@@ -243,7 +247,7 @@ public class CameraController {
 				}
 				camera.setCameraUrl(cameraDto.getCameraUrl());
 				camera.setEnabled(cameraDto.isEnabled());
-				camera.setName(cameraDto.getName());
+				camera.setAlias(cameraDto.getAlias());
 
 				schedule.setCapture(cameraDto.isCapture());
 				if (cameraDto.isCapture()) {
@@ -403,7 +407,7 @@ public class CameraController {
 		Camera camera = new Camera();
 		camera.setEnabled(true);
 		camera.setAlias(alias);
-		camera.setName(alias);
+		
 		camera.setCameraUrl(cameraUrl);
 		String email = (String) session.getAttribute("email");
 		LOGGER.info("username {}", email);
@@ -446,7 +450,7 @@ public class CameraController {
 				CameraDto cameraDto = new CameraDto();
 				cameraDto.setCameraId(camera.getCameraid());
 				cameraDto.setAlias(camera.getAlias());
-				cameraDto.setName(camera.getName());
+			
 				cameraDto.setCameraUrl(camera.getCameraUrl());
 				cameraDtos.add(cameraDto);
 			}
@@ -493,6 +497,7 @@ public class CameraController {
 		streamingServer.mailSender = mailSender;
 		streamingServer.userRepo = userRepo;
 		streamingServer.startStop = true;
+		streamingServer.gatewayRepo = gatewayRepo;
 		streamingServer.start();
 		HashMap<Long, Server2> userCamera = streamList.get(userId);
 		if (null == userCamera) {
@@ -533,7 +538,7 @@ public class CameraController {
 			// schedule.setRecordTime(timeFormat.parse(cameraDto.getRecordTime()));
 			cameraDto.setCapture(schedule.isCapture());
 			cameraDto.setCaptureTime(schedule.getCaptureTime());
-			// cameraDto.setRecordTime(schedule.getRecordTime());
+			cameraDto.setSecurity(camera.isSecurity());
 			cameraDto.setRecord(schedule.isRecord());
 			cameraDto.setCaptureRepeat(schedule.isCaptureRepeat());
 			cameraDto.setRecordRepeat(schedule.isRecordRepeat());
@@ -544,7 +549,7 @@ public class CameraController {
 		cameraDto.setCameraUrl(camera.getCameraUrl());
 
 		cameraDto.setEnabled(camera.isEnabled());
-		cameraDto.setName(camera.getName());
+		
 
 		return cameraDto;
 	}

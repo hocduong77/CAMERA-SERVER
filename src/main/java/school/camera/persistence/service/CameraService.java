@@ -29,6 +29,7 @@ import com.xuggle.mediatool.ToolFactory;
 import com.xuggle.xuggler.ICodec;
 
 import school.camera.persistence.dao.CameraRepo;
+import school.camera.persistence.dao.IGatewayRepo;
 import school.camera.persistence.dao.IImageRepo;
 import school.camera.persistence.dao.INotificationRepo;
 import school.camera.persistence.dao.IVideoRepo;
@@ -45,6 +46,9 @@ public class CameraService implements ICameraService {
 
 	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
+	@Autowired 
+	IGatewayRepo gatewayRepo;
+	
 	@Autowired
 	private CameraRepo cameraRepo;
 
@@ -148,9 +152,11 @@ public class CameraService implements ICameraService {
 		streamingServer.setUrl(camera.getCameraUrl());
 		streamingServer.setRTP_dest_port(camera.getPort().getPort());
 		streamingServer.cameraId = camera.getCameraid();
+		
 		streamingServer.objectWith = camera.getObjectWith();
 		streamingServer.objectHeight = camera.getObjectHeight();
 		streamingServer.cameraRepo = cameraRepo;
+		streamingServer.gatewayRepo = gatewayRepo;
 		streamingServer.videoRepo = videoRepo;
 		streamingServer.imageRepo = imageRepo;
 		streamingServer.notificationRepo = notificationRepo;

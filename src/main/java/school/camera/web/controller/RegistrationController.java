@@ -72,6 +72,7 @@ public class RegistrationController {
 
 	@Autowired
 	private ApplicationEventPublisher eventPublisher;
+	
 
 	public RegistrationController() {
 

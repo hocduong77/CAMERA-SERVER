@@ -28,8 +28,6 @@ public class Camera {
 
 	private String alias;
 
-	private String name;
-
 	private boolean enabled;
 
 	@OneToOne(targetEntity = Port.class, fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
@@ -145,13 +143,6 @@ public class Camera {
 		this.alias = alias;
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public Long getCameraid() {
 		return cameraid;

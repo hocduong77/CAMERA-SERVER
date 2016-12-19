@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 import school.camera.persistence.dao.CameraRepo;
+import school.camera.persistence.dao.IGatewayRepo;
 import school.camera.persistence.dao.IImageRepo;
 import school.camera.persistence.dao.INotificationRepo;
 import school.camera.persistence.dao.IVideoRepo;
@@ -41,6 +42,9 @@ import school.camera.spring.QuartzConfiguration;
 @Controller
 public class MediaController {
 
+	@Autowired 
+	IGatewayRepo gatewayRepo;
+	
 	@Autowired
 	private CameraRepo cameraRepo;
 

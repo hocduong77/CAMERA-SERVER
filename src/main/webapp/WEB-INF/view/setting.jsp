@@ -282,14 +282,14 @@
 						<!-- <input type="text" name="aliasedit" id="aliasedit" class="form-control valid" value="Alias"> -->
 					</div>
 				</div>
-				<div id="namediv" class="form-group">
+				<%-- <div id="namediv" class="form-group">
 					<label id="nametextdiv" class="col-sm-2 control-label">Name:</label>
 					<div class="col-sm-4">
 						<form:input path="name" value="" type="text"
 							class="form-control valid" placeholder="name" />
 						<!-- <input type="text" name="nameedit" id="nameedit" class="form-control valid" value="Name"> -->
 					</div>
-				</div>
+				</div> --%>
 				<div id="urldiv" class="form-group">
 					<label id="urltextdiv" class="col-sm-2 control-label">URL:</label>
 					<div class="col-sm-4">

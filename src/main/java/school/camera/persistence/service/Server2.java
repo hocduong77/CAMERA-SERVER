@@ -5,16 +5,20 @@ import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,7 +28,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.Deflater;
-import java.util.zip.GZIPOutputStream;
 
 import javax.imageio.ImageIO;
 import javax.swing.JLabel;
@@ -49,11 +52,13 @@ import com.xuggle.mediatool.ToolFactory;
 import com.xuggle.xuggler.ICodec;
 
 import school.camera.persistence.dao.CameraRepo;
+import school.camera.persistence.dao.IGatewayRepo;
 import school.camera.persistence.dao.IImageRepo;
 import school.camera.persistence.dao.INotificationRepo;
 import school.camera.persistence.dao.IVideoRepo;
 import school.camera.persistence.dao.UserRepository;
 import school.camera.persistence.model.Camera;
+import school.camera.persistence.model.Gateway;
 import school.camera.persistence.model.Notification;
 import school.camera.persistence.model.Video;
 
@@ -66,6 +71,7 @@ public class Server2 implements Runnable {
 	String mosQuittoSub = "C:/mosquitto/mosquitto_pub.exe -h 192.168.1.109 -d –t camera/";
 
 	public IVideoRepo videoRepo;
+	public IGatewayRepo gatewayRepo;
 	public UserRepository userRepo;
 	public CameraRepo cameraRepo;
 	public IImageRepo imageRepo;
@@ -436,21 +442,29 @@ public class Server2 implements Runnable {
 		return output;
 	}
 
-	private static void speaker(Long cameraId, boolean isOn) {
-		try {
-			String cmd1 = "C:/mosquitto/mosquitto_pub.exe -h 192.168.1.109 -d -t camera/" + cameraId + " -m 0";
-			String cmd2 = "C:/mosquitto/mosquitto_pub.exe -h 192.168.1.109 -d -t camera/" + cameraId + " -m 1";
-			if (isOn) {
-				Runtime runtime = Runtime.getRuntime();
-				runtime.exec(cmd2);
-			} else {
-				Runtime runtime = Runtime.getRuntime();
-				runtime.exec(cmd1);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	private void speaker(Long cameraId, boolean isOn) {
+		Camera camera = cameraRepo.findByCameraid(cameraId);
+		if (camera.getGatewayId() != 0) {
+			System.out.println("gate way id " + camera.getGatewayId());
+			Gateway gateway = gatewayRepo.findOne(camera.getGatewayId());
+			String gateIp = gateway.getGatewayIP();
+			try {
+				String cmd1 = "C:/mosquitto/mosquitto_pub.exe -h " + gateIp + " -d -t camera/" + cameraId + " -m 0";
+				String cmd2 = "C:/mosquitto/mosquitto_pub.exe -h " + gateIp + " -d -t camera/" + cameraId + " -m 1";
 
+				if (isOn) {
+					Runtime runtime = Runtime.getRuntime();
+					runtime.exec(cmd2);
+					System.out.println(cmd2);
+				} else {
+					Runtime runtime = Runtime.getRuntime();
+					runtime.exec(cmd1);
+					System.out.println(cmd1);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private void saveVideo(String fileName, Camera camera) {
@@ -580,6 +594,52 @@ public class Server2 implements Runnable {
 			buf[i] = bytes[i];
 		}
 		return bytes.length;
+	}
+
+	public String sendSMS(String phone, String cameraName) throws IOException {
+
+		final String APIKey = "AB34AED6712E20576E2447E85DC019";
+		final String SecretKey = "B557E42BC06F5C8B51600F749AF85D";
+
+		String message = "Notification detection on camera " + cameraName;
+		String url = "http://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_get?ApiKey="
+				+ URLEncoder.encode(APIKey, "UTF-8") + "&SecretKey=" + URLEncoder.encode(SecretKey, "UTF-8")
+				+ "&SmsType=8&Phone=" + URLEncoder.encode(phone, "UTF-8") + "&Content="
+				+ URLEncoder.encode(message, "UTF-8");
+
+		URL obj;
+		try {
+			obj = new URL(url);
+
+			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+			// you need to encode ONLY the values of the parameters
+
+			con.setRequestMethod("GET");
+			con.setRequestProperty("Accept", "application/json");
+
+			int responseCode = con.getResponseCode();
+			System.out.println("\nSending 'GET' request to URL : " + url);
+			System.out.println("Response Code : " + responseCode);
+			if (responseCode == 200) {
+			}
+			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			String inputLine;
+			StringBuffer response = new StringBuffer();
+
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			in.close();
+
+			System.out.println("CodeResult=" + response.toString());
+
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "SUCCESS";
+
 	}
 
 	public void start() {
